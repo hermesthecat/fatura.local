@@ -64,8 +64,11 @@ function guvenli_str($str) {
 }
 
 // Para formatı
-function formatPara($tutar) {
-    return number_format($tutar, 2, ',', '.') . ' ' . PARA_BIRIMI;
+function formatPara($tutar, $para_birimi_sembol = null) {
+    if ($para_birimi_sembol === null && isset($_SESSION['fatura']['para_birimi_sembol'])) {
+        $para_birimi_sembol = $_SESSION['fatura']['para_birimi_sembol'];
+    }
+    return number_format($tutar, 2, ',', '.') . ' ' . ($para_birimi_sembol ?? '₺');
 }
 
 // Tarih formatı

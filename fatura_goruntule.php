@@ -29,6 +29,12 @@ $fatura = $db->query("SELECT f.*, c.*, cur.sembol as para_birimi_sembol, cur.kod
     WHERE f.id = :id AND f.company_id = :company_id",
     [':id' => $_GET['id'], ':company_id' => $_SESSION['company_id']])->fetch();
 
+    var_dump("SQL: " . "SELECT f.*, c.*, cur.sembol as para_birimi_sembol, cur.kod as para_birimi_kod 
+    FROM invoices f 
+    INNER JOIN customers c ON c.id = f.customer_id 
+    INNER JOIN currencies cur ON cur.id = f.currency_id 
+    WHERE f.id = " . $_GET['id'] . " AND f.company_id = " . $_SESSION['company_id']);
+
 if (!$fatura) {
     header('Location: fatura_listele.php');
     exit;

@@ -175,7 +175,7 @@ $w = array(
 $total_width = array_sum($w);
 $start_x = $pdf->GetX();
 
-$header = array('Sıra', 'Mal/Hizmet', 'Miktar', 'Birim', 'Birim Fiyat', 'KDV(%)', 'Toplam');
+$header = array('Sıra', 'Mal/Hizmet', 'Miktar', 'Birim', 'Bir. Fiyat', 'KDV(%)', 'Toplam');
 
 // Başlık
 foreach($header as $i => $h) {

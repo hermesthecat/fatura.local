@@ -83,8 +83,7 @@ foreach ($system_settings as $ayar_adi => $ayar_degeri) {
     }
 }
 
-// Varsayılan değerler (hiçbir ayar bulunamazsa)
-if (!defined('FATURA_PREFIX')) define('FATURA_PREFIX', 'INV');
-if (!defined('PARA_BIRIMI')) define('PARA_BIRIMI', '₺');
-if (!defined('VARSAYILAN_KDV')) define('VARSAYILAN_KDV', 18);
-if (!defined('FATURA_NOT')) define('FATURA_NOT', 'Bu bir fatura notudur.');
+// Varsayılan fatura prefix
+if (!defined('FATURA_PREFIX')) {
+    define('FATURA_PREFIX', 'INV');
+}
