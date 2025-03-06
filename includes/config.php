@@ -8,6 +8,21 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Veritabanından ayarları al
+require_once 'db.php';
+$db = Database::getInstance();
+$ayarlar = $db->query("SELECT * FROM system_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
+
+// Sistem ayarlarını tanımla
+foreach ($ayarlar as $ayar_adi => $ayar_degeri) {
+    define(strtoupper($ayar_adi), $ayar_degeri);
+}
+
+// Varsayılan değerler (veritabanında yoksa)
+if (!defined('FATURA_PREFIX')) define('FATURA_PREFIX', 'INV');
+if (!defined('PARA_BIRIMI')) define('PARA_BIRIMI', '₺');
+if (!defined('VARSAYILAN_KDV')) define('VARSAYILAN_KDV', 18);
+
 // Veritabanı bağlantı bilgileri
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'fatura_db');
