@@ -3,6 +3,41 @@ session_start();
 require_once 'includes/config.php';
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
+
+// Giriş yapılmamışsa login sayfasına yönlendir
+if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php') {
+    // Remember token kontrolü
+    if (isset($_COOKIE['remember_token'])) {
+        $db = Database::getInstance();
+        $token = $db->query("SELECT * FROM remember_tokens 
+                            WHERE token = :token AND expires_at > NOW()", 
+            [':token' => $_COOKIE['remember_token']])->fetch();
+
+        if ($token) {
+            $user = $db->query("SELECT * FROM users WHERE id = :id", 
+                [':id' => $token['user_id']])->fetch();
+
+            if ($user) {
+                $_SESSION['user'] = [
+                    'id' => $user['id'],
+                    'username' => $user['username'],
+                    'ad_soyad' => $user['ad_soyad'],
+                    'email' => $user['email'],
+                    'rol' => $user['rol']
+                ];
+
+                if ($user['rol'] === 'admin') {
+                    $_SESSION['admin'] = true;
+                }
+            }
+        }
+    }
+
+    if (!isset($_SESSION['user'])) {
+        header('Location: login.php');
+        exit;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -35,7 +70,7 @@ require_once 'includes/functions.php';
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="index.php">Ana Sayfa</a>
                     </li>
@@ -48,7 +83,28 @@ require_once 'includes/functions.php';
                     <li class="nav-item">
                         <a class="nav-link" href="musteri_listele.php">Müşteriler</a>
                     </li>
+                    <?php if (isset($_SESSION['admin'])): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin.php">Ayarlar</a>
+                    </li>
+                    <?php endif; ?>
                 </ul>
+                <?php if (isset($_SESSION['user'])): ?>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> 
+                            <?php echo $_SESSION['user']['ad_soyad']; ?>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="logout.php">
+                                <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <?php endif; ?>
             </div>
         </div>
     </nav>

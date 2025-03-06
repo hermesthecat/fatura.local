@@ -62,6 +62,20 @@ CREATE TABLE IF NOT EXISTS `company_settings` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Kullanıcılar tablosu
+CREATE TABLE IF NOT EXISTS `users` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `username` varchar(50) NOT NULL UNIQUE,
+    `password` varchar(255) NOT NULL,
+    `ad_soyad` varchar(100) NOT NULL,
+    `email` varchar(255) NOT NULL UNIQUE,
+    `rol` enum('admin','user') NOT NULL DEFAULT 'user',
+    `son_giris` datetime DEFAULT NULL,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Örnek müşteri verisi
 INSERT INTO customers (firma_adi, vergi_no, vergi_dairesi, adres, telefon, email) VALUES
 ('Örnek Firma A.Ş.', '1234567890', 'Ankara VD', 'Kızılay Mah. Atatürk Bulvarı No:123 Çankaya/Ankara', '0312 123 45 67', 'info@ornekfirma.com'),
@@ -69,4 +83,20 @@ INSERT INTO customers (firma_adi, vergi_no, vergi_dairesi, adres, telefon, email
 
 -- Varsayılan değerler
 INSERT INTO `company_settings` (`unvan`, `adres`, `sehir`, `telefon`, `email`, `vergi_dairesi`, `vergi_no`, `web`, `mersis_no`, `ticaret_sicil_no`, `banka_adi`, `iban`) 
-VALUES ('A. KEREM GÖK', 'Şirket Adresi, Sokak No: 123', '34000, İstanbul / Türkiye', '+90 (212) 123 45 67', 'info@keremgok.com', 'KADIKÖY', '1234567890', 'www.keremgok.com', '0123456789000001', '123456-0', 'X BANKASI', 'TR00 0000 0000 0000 0000 0000 00'); 
+VALUES ('A. KEREM GÖK', 'Şirket Adresi, Sokak No: 123', '34000, İstanbul / Türkiye', '+90 (212) 123 45 67', 'info@keremgok.com', 'KADIKÖY', '1234567890', 'www.keremgok.com', '0123456789000001', '123456-0', 'X BANKASI', 'TR00 0000 0000 0000 0000 0000 00');
+
+-- Varsayılan admin kullanıcısı (şifre: 123456)
+INSERT INTO `users` (`username`, `password`, `ad_soyad`, `email`, `rol`) 
+VALUES ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'A. Kerem Gök', 'admin@keremgok.com', 'admin');
+
+-- Remember Tokens tablosu
+CREATE TABLE IF NOT EXISTS `remember_tokens` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `user_id` int(11) NOT NULL,
+    `token` varchar(64) NOT NULL,
+    `expires_at` datetime NOT NULL,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `token` (`token`),
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
