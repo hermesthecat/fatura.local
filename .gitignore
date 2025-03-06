@@ -4,3 +4,9 @@
 .roomodes
 memory-bank/
 projectBrief.md
+composer.phar
+vendor/
+.env
+.env.local
+.env.development
+.env.production

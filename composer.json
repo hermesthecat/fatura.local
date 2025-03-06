@@ -1,0 +1,28 @@
+{
+    "name": "akeremgok/fatura-sistemi",
+    "description": "PHP Fatura Oluşturma Sistemi",
+    "type": "project",
+    "authors": [
+        {
+            "name": "A. Kerem Gök",
+            "email": "admin@fatura.local"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "tecnickcom/tcpdf": "^6.6",
+        "phpmailer/phpmailer": "^6.8",
+        "vlucas/phpdotenv": "^5.5",
+        "firebase/php-jwt": "^6.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "classes/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    }
+}
