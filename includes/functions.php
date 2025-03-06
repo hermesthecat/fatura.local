@@ -145,10 +145,20 @@ function sayiyiYaziyaCevir($sayi) {
         "", "BİN", "MİLYON", "MİLYAR", "TRİLYON", "KATRİLYON"
     );
 
+    // Sayıyı düzgün formata getir
+    $sayi = floatval($sayi);
     $sayi = number_format($sayi, 2, '.', '');
+    
+    // Tam ve ondalık kısımları ayır
     $sayi_parcalari = explode('.', $sayi);
     $tam_kisim = $sayi_parcalari[0];
-    $ondalik_kisim = $sayi_parcalari[1];
+    
+    // Ondalık kısmı kontrol et ve düzenle
+    $ondalik_kisim = "00";
+    if (isset($sayi_parcalari[1])) {
+        $ondalik_kisim = str_pad($sayi_parcalari[1], 2, "0", STR_PAD_RIGHT);
+        $ondalik_kisim = substr($ondalik_kisim, 0, 2);
+    }
     
     if ($tam_kisim == 0) {
         return "SIFIR TÜRK LİRASI " . $ondalik_kisim . " KURUŞ";
@@ -161,24 +171,32 @@ function sayiyiYaziyaCevir($sayi) {
     for ($i = $basamak_grubu; $i > 0; $i--) {
         $basamak = "";
         $grup = substr($tam_kisim, -3);
+        if ($grup === false) $grup = "0";
         $tam_kisim = substr($tam_kisim, 0, -3);
+        if ($tam_kisim === false) $tam_kisim = "";
 
-        if ($grup > 99) {
-            if ($grup[0] == "1") {
+        if (strlen($grup) > 0 && intval($grup) > 99) {
+            $yuzler = substr($grup, 0, 1);
+            if ($yuzler === "1") {
                 $basamak .= "YÜZ";
-            } else if ($grup[0] != "0") {
-                $basamak .= $birler[$grup[0]] . "YÜZ";
+            } else if ($yuzler !== "0") {
+                $basamak .= $birler[intval($yuzler)] . "YÜZ";
             }
-            $grup = substr($grup, 1, 2);
+            $grup = substr($grup, 1);
+            if ($grup === false) $grup = "0";
         }
 
-        if ($grup > 9) {
-            $basamak .= $onlar[$grup[0]];
-            $grup = substr($grup, 1, 1);
+        if (strlen($grup) > 0 && intval($grup) > 9) {
+            $onlar_basamak = substr($grup, 0, 1);
+            if ($onlar_basamak !== "0") {
+                $basamak .= $onlar[intval($onlar_basamak)];
+            }
+            $grup = substr($grup, 1);
+            if ($grup === false) $grup = "0";
         }
 
-        if ($grup > 0) {
-            $basamak .= $birler[$grup];
+        if (strlen($grup) > 0 && intval($grup) > 0) {
+            $basamak .= $birler[intval($grup)];
         }
 
         if ($basamak != "") {
@@ -187,10 +205,15 @@ function sayiyiYaziyaCevir($sayi) {
             } else {
                 $yazi = $basamak . $binler[$i-1] . $yazi;
             }
+        } else if ($i == 2) { // Binler basamağı boş ama gerekli
+            $yazi = "BİN" . $yazi;
         }
     }
 
-    return trim($yazi . " TÜRK LİRASI " . $ondalik_kisim . " KURUŞ");
+    $yazi = trim($yazi);
+    if (empty($yazi)) $yazi = "SIFIR";
+
+    return $yazi . " TÜRK LİRASI " . $ondalik_kisim . " KURUŞ";
 }
 
 function mesaj_yonlendir($mesaj, $tur = 'success', $url = null) {

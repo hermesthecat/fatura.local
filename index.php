@@ -84,9 +84,10 @@ if (!isset($_SESSION['company_id'])) {
     $musteri_sayisi = $db->query("SELECT COUNT(*) as sayi FROM customers WHERE company_id = :company_id",
         [':company_id' => $_SESSION['company_id']])->fetch()['sayi'];
     
-    $son_faturalar = $db->query("SELECT f.*, c.firma_adi as musteri_adi 
+    $son_faturalar = $db->query("SELECT f.*, c.firma_adi as musteri_adi, cur.sembol as para_birimi_sembol 
         FROM invoices f 
         INNER JOIN customers c ON c.id = f.customer_id 
+        LEFT JOIN currencies cur ON cur.id = f.currency_id 
         WHERE f.company_id = :company_id 
         ORDER BY f.fatura_tarihi DESC 
         LIMIT 5", 
@@ -165,7 +166,7 @@ if (!isset($_SESSION['company_id'])) {
                                         <td><?php echo $fatura['musteri_adi']; ?></td>
                                         <td><?php echo date('d.m.Y', strtotime($fatura['fatura_tarihi'])); ?></td>
                                         <td class="text-end fw-bold">
-                                            <?php echo number_format($fatura['genel_toplam'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                                            <?php echo number_format($fatura['genel_toplam'], 2, ',', '.'); ?> <?php echo $fatura['para_birimi_sembol'] ?? '₺'; ?>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
