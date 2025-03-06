@@ -28,6 +28,21 @@ $musteriler = $db->query("SELECT * FROM customers WHERE company_id = :company_id
 $sql = "SELECT * FROM currencies WHERE aktif = 1 ORDER BY varsayilan DESC, kod";
 $para_birimleri = $db->query($sql)->fetchAll();
 
+// Şirket ve ayarlarını al
+$sql = "SELECT 
+    c.*,
+    MAX(CASE WHEN cs.ayar_adi = 'FATURA_NOT' THEN cs.ayar_degeri END) as fatura_not,
+    MAX(CASE WHEN cs.ayar_adi = 'VARSAYILAN_KDV' THEN cs.ayar_degeri ELSE '18' END) as varsayilan_kdv
+    FROM companies c 
+    LEFT JOIN company_settings cs ON cs.company_id = c.id 
+    WHERE c.id = :company_id
+    GROUP BY c.id";
+$sirket = $db->query($sql, [':company_id' => $_SESSION['company_id']])->fetch();
+
+// Varsayılan değerler
+$fatura_not = $sirket['fatura_not'] ?? '';
+$varsayilan_kdv = $sirket['varsayilan_kdv'] ?? '18';
+
 // Form gönderildi mi?
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['csrf_token']) && csrf_token_kontrol($_POST['csrf_token'])) {
@@ -205,7 +220,8 @@ require_once 'templates/header.php';
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="aciklama" class="form-label">Açıklama</label>
-                    <textarea name="aciklama" id="aciklama" class="form-control" rows="3"><?php echo FATURA_NOT; ?></textarea>
+                    <textarea name="aciklama" id="aciklama" class="form-control" rows="3"><?php echo $fatura_not; ?></textarea>
+                    <div class="form-text">Faturada görünecek not/açıklama.</div>
                 </div>
                 <div class="col-md-6">
                     <div class="card">
@@ -221,7 +237,7 @@ require_once 'templates/header.php';
                                 <label class="col-sm-4 col-form-label">KDV Oranı (%):</label>
                                 <div class="col-sm-8">
                                     <input type="number" name="kdv_orani" id="kdv_orani" 
-                                           class="form-control" value="<?php echo VARSAYILAN_KDV; ?>" min="0" max="100" required>
+                                           class="form-control" value="<?php echo $varsayilan_kdv; ?>" min="0" max="100" required>
                                 </div>
                             </div>
                             <div class="row mb-2">

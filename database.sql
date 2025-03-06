@@ -107,10 +107,10 @@ CREATE TABLE IF NOT EXISTS `users` (
     `ad_soyad` varchar(100) NOT NULL,
     `email` varchar(255) NOT NULL UNIQUE,
     `rol` enum('admin', 'user') NOT NULL DEFAULT 'user',
-    `son_giris` datetime DEFAULT NULL,,
+    `son_giris` datetime DEFAULT NULL,
+,
     `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    PRIMARY KEY (`id`)
+    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 -- Kullanıcı-Şirket ilişki tablosu
 CREATE TABLE IF NOT EXISTS `user_companies` (
@@ -171,9 +171,18 @@ VALUES (
     );
 -- Admin kullanıcısını test şirketine ekle
 INSERT INTO `user_companies` (`user_id`, `company_id`)
-SELECT 
-    (SELECT `id` FROM `users` WHERE `username` = 'admin' LIMIT 1) as user_id,
-    (SELECT `id` FROM `companies` WHERE `unvan` = 'Test Şirketi A.Ş.' LIMIT 1) as company_id;
+SELECT (
+        SELECT `id`
+        FROM `users`
+        WHERE `username` = 'admin'
+        LIMIT 1
+    ) as user_id,
+    (
+        SELECT `id`
+        FROM `companies`
+        WHERE `unvan` = 'Test Şirketi A.Ş.'
+        LIMIT 1
+    ) as company_id;
 -- Remember Tokens tablosu
 CREATE TABLE IF NOT EXISTS `remember_tokens` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -185,32 +194,3 @@ CREATE TABLE IF NOT EXISTS `remember_tokens` (
     UNIQUE KEY `token` (`token`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
--- Sistem Ayarları Tablosu (Genel ayarlar için)
-CREATE TABLE IF NOT EXISTS `system_settings` (
-    `id` int(11) NOT NULL AUTO_INCREMENT,
-    `ayar_adi` varchar(50) NOT NULL UNIQUE,
-    `ayar_degeri` varchar(255) NOT NULL,
-    `aciklama` varchar(255) DEFAULT NULL,
-    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
--- Varsayılan sistem ayarları
-INSERT INTO `system_settings` (`ayar_adi`, `ayar_degeri`, `aciklama`)
-VALUES ('fatura_prefix', 'INV', 'Fatura numarası öneki'),
-    ('para_birimi', '₺', 'Para birimi sembolü'),
-    ('varsayilan_kdv', '18', 'Varsayılan KDV oranı'),
-    (
-        'firma_telefon_formati',
-        '+90 (XXX) XXX XX XX',
-        'Telefon numarası formatı'
-    ),
-    (
-        'fatura_not',
-        'Bu bir fatura notu örneğidir.',
-        'Faturalarda görünecek varsayılan not'
-    ),
-    (
-        'varsayilan_para_birimi',
-        '1',
-        'Varsayılan para birimi ID'
-    );

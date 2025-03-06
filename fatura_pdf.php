@@ -55,7 +55,10 @@ if (!$kalemler) {
 }
 
 // Şirket bilgilerini al
-$sql = "SELECT * FROM companies WHERE id = :company_id";
+$sql = "SELECT c.*, cs.ayar_degeri as fatura_not 
+        FROM companies c 
+        LEFT JOIN company_settings cs ON cs.company_id = c.id AND cs.ayar_adi = 'FATURA_NOT'
+        WHERE c.id = :company_id";
 $sirket = $db->query($sql, [':company_id' => $_SESSION['company_id']])->fetch();
 
 if (!$sirket) {
@@ -235,6 +238,13 @@ if ($fatura['aciklama']) {
     $pdf->SetFont('dejavusans', '', 9);
     $pdf->MultiCell(0, 5, $fatura['aciklama'], 0, 'L');
 }
+
+// Fatura Notu
+// if ($sirket['fatura_not']) {
+//     $pdf->Ln(5);
+//     $pdf->SetFont('dejavusans', 'I', 8);
+//     $pdf->MultiCell(0, 4, $sirket['fatura_not'], 0, 'L');
+// }
 
 // Banka Bilgileri ve İban
 $pdf->Ln(5);
