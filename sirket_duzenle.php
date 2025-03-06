@@ -1,5 +1,8 @@
 <?php
-require_once 'templates/header.php';
+session_start();
+require_once 'includes/config.php';
+require_once 'includes/db.php';
+require_once 'includes/functions.php';
 
 $db = Database::getInstance();
 
@@ -109,6 +112,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Tüm kullanıcıları al
 $kullanicilar = $db->query("SELECT * FROM users ORDER BY ad_soyad")->fetchAll();
+
+// Header'ı en son dahil et
+require_once 'templates/header.php';
 ?>
 
 <div class="container-fluid">
@@ -153,7 +159,7 @@ $kullanicilar = $db->query("SELECT * FROM users ORDER BY ad_soyad")->fetchAll();
                     <div class="col-md-6">
                         <label class="form-label">Web Sitesi</label>
                         <input type="text" name="web" class="form-control" 
-                               value="<?php echo $sirket['web']; ?>" required>
+                               value="<?php echo $sirket['web']; ?>">
                     </div>
                 </div>
 
@@ -196,7 +202,7 @@ $kullanicilar = $db->query("SELECT * FROM users ORDER BY ad_soyad")->fetchAll();
                     <div class="col-md-4">
                         <label class="form-label">Mersis No</label>
                         <input type="text" name="mersis_no" class="form-control" 
-                               value="<?php echo $sirket['mersis_no']; ?>" required>
+                               value="<?php echo $sirket['mersis_no']; ?>">
                     </div>
                 </div>
 
@@ -204,17 +210,17 @@ $kullanicilar = $db->query("SELECT * FROM users ORDER BY ad_soyad")->fetchAll();
                     <div class="col-md-4">
                         <label class="form-label">Ticaret Sicil No</label>
                         <input type="text" name="ticaret_sicil_no" class="form-control" 
-                               value="<?php echo $sirket['ticaret_sicil_no']; ?>" required>
+                               value="<?php echo $sirket['ticaret_sicil_no']; ?>">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Banka Adı</label>
                         <input type="text" name="banka_adi" class="form-control" 
-                               value="<?php echo $sirket['banka_adi']; ?>" required>
+                               value="<?php echo $sirket['banka_adi']; ?>">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">IBAN</label>
                         <input type="text" name="iban" class="form-control" 
-                               value="<?php echo $sirket['iban']; ?>" required>
+                               value="<?php echo $sirket['iban']; ?>">
                     </div>
                 </div>
 
