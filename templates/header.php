@@ -124,12 +124,7 @@ if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php')
                                 </a>
                             </li>
                         <?php endif; ?>
-                        <?php if (isset($_SESSION['user']['admin']) && $_SESSION['user']['admin']): ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="sirketler.php">
-                                    <i class="bi bi-building"></i> Şirketler
-                                </a>
-                            </li>
+                        <?php if (isset($_SESSION['user']['rol']) && $_SESSION['user']['rol'] == 'admin'): ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="admin.php">
                                     <i class="bi bi-gear"></i> Ayarlar
@@ -172,7 +167,7 @@ if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php')
 
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> <?php echo $_SESSION['user']['username']; ?>
+                                <i class="bi bi-person-circle"></i> <?php echo $_SESSION['user']['ad_soyad']; ?>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
