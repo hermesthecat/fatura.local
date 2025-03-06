@@ -188,4 +188,16 @@ function sayiyiYaziyaCevir($sayi) {
     }
 
     return trim($yazi . " TÜRK LİRASI " . $ondalik_kisim . " KURUŞ");
+}
+
+function mesaj_yonlendir($mesaj, $tur = 'success', $url = null) {
+    $_SESSION['mesaj'] = [
+        'icerik' => $mesaj,
+        'tur' => $tur
+    ];
+    
+    if ($url) {
+        header('Location: ' . $url);
+        exit;
+    }
 } 
