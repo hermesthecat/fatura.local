@@ -191,9 +191,9 @@ foreach($kalemler as $kalem) {
     $pdf->Cell($w[1], 6, $kalem['urun_adi'], 1, 0, 'L');
     $pdf->Cell($w[2], 6, $kalem['miktar'], 1, 0, 'C');
     $pdf->Cell($w[3], 6, 'Adet', 1, 0, 'C');
-    $pdf->Cell($w[4], 6, formatPara($kalem['birim_fiyat']), 1, 0, 'R');
+    $pdf->Cell($w[4], 6, formatPara($kalem['birim_fiyat'], $fatura['para_birimi_sembol']), 1, 0, 'R');
     $pdf->Cell($w[5], 6, $fatura['kdv_orani'], 1, 0, 'C');
-    $pdf->Cell($w[6], 6, formatPara($kalem['toplam_fiyat']), 1, 0, 'R');
+    $pdf->Cell($w[6], 6, formatPara($kalem['toplam_fiyat'], $fatura['para_birimi_sembol']), 1, 0, 'R');
     $pdf->Ln();
 }
 
@@ -217,15 +217,15 @@ $pdf->Cell($w[0] + $w[1] + $w[2], 6, $yazi_ile, 0, 1, 'L');
 // Toplamlar sağda
 $pdf->SetX($start_x + $total_width - ($w[5] + $w[6]));
 $pdf->Cell($w[5], 6, 'ARA TOPLAM:', 0, 0, 'R');
-$pdf->Cell($w[6], 6, formatPara($fatura['toplam_tutar']) . ' ' . $fatura['para_birimi_sembol'], 1, 1, 'R');
+$pdf->Cell($w[6], 6, formatPara($fatura['toplam_tutar'], $fatura['para_birimi_sembol']), 1, 1, 'R');
 
 $pdf->SetX($start_x + $total_width - ($w[5] + $w[6]));
 $pdf->Cell($w[5], 6, 'KDV TOPLAM:', 0, 0, 'R');
-$pdf->Cell($w[6], 6, formatPara($fatura['kdv_tutari']) . ' ' . $fatura['para_birimi_sembol'], 1, 1, 'R');
+$pdf->Cell($w[6], 6, formatPara($fatura['kdv_tutari'], $fatura['para_birimi_sembol']), 1, 1, 'R');
 
 $pdf->SetX($start_x + $total_width - ($w[5] + $w[6]));
 $pdf->Cell($w[5], 6, 'GENEL TOPLAM:', 0, 0, 'R');
-$pdf->Cell($w[6], 6, formatPara($fatura['genel_toplam']) . ' ' . $fatura['para_birimi_sembol'], 1, 1, 'R');
+$pdf->Cell($w[6], 6, formatPara($fatura['genel_toplam'], $fatura['para_birimi_sembol']), 1, 1, 'R');
 
 // Açıklama ve Notlar
 if ($fatura['aciklama']) {
