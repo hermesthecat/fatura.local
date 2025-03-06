@@ -52,6 +52,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'admin' => $user['rol'] === 'admin'
         ];
 
+        // Kullanıcının şirketlerini al
+        $sirketler = $db->query(
+            "SELECT c.* FROM companies c 
+            INNER JOIN user_companies uc ON uc.company_id = c.id 
+            WHERE uc.user_id = :user_id AND c.aktif = 1 
+            ORDER BY c.unvan",
+            [':user_id' => $user['id']]
+        )->fetchAll();
+
+        // Şirketleri session'a kaydet
+        $_SESSION['user_companies'] = $sirketler;
+
+        // Varsayılan şirket seç (ilk şirket)
+        if (!empty($sirketler)) {
+            $_SESSION['company_id'] = $sirketler[0]['id'];
+            $_SESSION['company_unvan'] = $sirketler[0]['unvan'];
+        }
+
         // Son giriş tarihini güncelle
         $db->query(
             "UPDATE users SET son_giris = NOW() WHERE id = :id",
