@@ -12,9 +12,16 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-// Şirket bilgilerini al
-$sirket = $db->query("SELECT * FROM companies WHERE id = :id", 
-    [':id' => $_GET['id']])->fetch();
+// Şirket ve ayarlarını al
+$sql = "SELECT 
+    c.*,
+    MAX(CASE WHEN cs.ayar_adi = 'FATURA_NOT' THEN cs.ayar_degeri END) as fatura_not,
+    MAX(CASE WHEN cs.ayar_adi = 'VARSAYILAN_KDV' THEN cs.ayar_degeri END) as varsayilan_kdv
+    FROM companies c 
+    LEFT JOIN company_settings cs ON cs.company_id = c.id 
+    WHERE c.id = :id
+    GROUP BY c.id";
+$sirket = $db->query($sql, [':id' => $_GET['id']])->fetch();
 
 if (!$sirket) {
     header('Location: sirketler.php');
@@ -56,12 +63,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Şirket bilgilerini güncelle
         $sql = "UPDATE companies SET 
             unvan = :unvan,
+            vergi_dairesi = :vergi_dairesi,
+            vergi_no = :vergi_no,
             adres = :adres,
             sehir = :sehir,
             telefon = :telefon,
             email = :email,
-            vergi_dairesi = :vergi_dairesi,
-            vergi_no = :vergi_no,
             web = :web,
             mersis_no = :mersis_no,
             ticaret_sicil_no = :ticaret_sicil_no,
@@ -73,12 +80,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $params = [
             ':unvan' => $_POST['unvan'],
+            ':vergi_dairesi' => $_POST['vergi_dairesi'],
+            ':vergi_no' => $_POST['vergi_no'],
             ':adres' => $_POST['adres'],
             ':sehir' => $_POST['sehir'],
             ':telefon' => $_POST['telefon'],
             ':email' => $_POST['email'],
-            ':vergi_dairesi' => $_POST['vergi_dairesi'],
-            ':vergi_no' => $_POST['vergi_no'],
             ':web' => $_POST['web'],
             ':mersis_no' => $_POST['mersis_no'],
             ':ticaret_sicil_no' => $_POST['ticaret_sicil_no'],
@@ -86,10 +93,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':iban' => $_POST['iban'],
             ':logo' => $logo_path,
             ':aktif' => isset($_POST['aktif']) ? 1 : 0,
-            ':id' => $sirket['id']
+            ':id' => $_GET['id']
         ];
 
         $db->query($sql, $params);
+
+        // Şirket ayarlarını güncelle
+        $ayarlar = [
+            'FATURA_NOT' => $_POST['fatura_not'],
+            'VARSAYILAN_KDV' => $_POST['varsayilan_kdv']
+        ];
+
+        foreach ($ayarlar as $ayar_adi => $ayar_degeri) {
+            // Önce ayarı sil
+            $db->query("DELETE FROM company_settings WHERE company_id = :company_id AND ayar_adi = :ayar_adi",
+                [':company_id' => $_GET['id'], ':ayar_adi' => $ayar_adi]);
+            
+            // Sonra yeni değeri ekle
+            if (!empty($ayar_degeri)) {
+                $db->query("INSERT INTO company_settings (company_id, ayar_adi, ayar_degeri) VALUES (:company_id, :ayar_adi, :ayar_degeri)",
+                    [
+                        ':company_id' => $_GET['id'],
+                        ':ayar_adi' => $ayar_adi,
+                        ':ayar_degeri' => $ayar_degeri
+                    ]);
+            }
+        }
 
         // Kullanıcı ilişkilerini güncelle
         $db->query("DELETE FROM user_companies WHERE company_id = :company_id",
@@ -106,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: sirketler.php');
         exit;
     } catch (Exception $e) {
-        hata($e->getMessage());
+        hata("Şirket güncellenirken bir hata oluştu: " . $e->getMessage());
     }
 }
 
@@ -117,10 +146,15 @@ $kullanicilar = $db->query("SELECT * FROM users ORDER BY ad_soyad")->fetchAll();
 require_once 'templates/header.php';
 ?>
 
-<div class="container-fluid">
-    <div class="row mb-3">
+<div class="container-fluid py-4">
+    <div class="row mb-4">
         <div class="col">
-            <h1 class="h3">Şirket Düzenle: <?php echo $sirket['unvan']; ?></h1>
+            <h1 class="h3">Şirket Düzenle</h1>
+        </div>
+        <div class="col text-end">
+            <a href="sirketler.php" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Geri
+            </a>
         </div>
     </div>
 
@@ -129,98 +163,105 @@ require_once 'templates/header.php';
             <form method="post" enctype="multipart/form-data">
                 <?php echo csrf_token_field(); ?>
                 
-                <div class="row mb-3">
+                <div class="row">
                     <div class="col-md-6">
-                        <label class="form-label">Logo</label>
-                        <?php if ($sirket['logo'] && file_exists($sirket['logo'])): ?>
-                            <div class="mb-2">
-                                <img src="<?php echo $sirket['logo']; ?>" alt="Logo" style="max-width: 200px;">
-                            </div>
-                        <?php endif; ?>
-                        <input type="file" name="logo" class="form-control" accept=".png,.jpg,.jpeg">
-                        <small class="text-muted">PNG, JPG veya JPEG (max. 2MB)</small>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Durum</label>
-                        <div class="form-check">
-                            <input type="checkbox" name="aktif" value="1" class="form-check-input" 
-                                <?php echo $sirket['aktif'] ? 'checked' : ''; ?>>
-                            <label class="form-check-label">Aktif</label>
+                        <h5 class="card-title mb-4">Şirket Bilgileri</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Logo</label>
+                            <?php if ($sirket['logo'] && file_exists($sirket['logo'])): ?>
+                                <div class="mb-2">
+                                    <img src="<?php echo $sirket['logo']; ?>" alt="Logo" style="max-width: 200px;">
+                                </div>
+                            <?php endif; ?>
+                            <input type="file" name="logo" class="form-control" accept=".png,.jpg,.jpeg">
+                            <small class="text-muted">PNG, JPG veya JPEG (max. 2MB)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ünvan</label>
+                            <input type="text" name="unvan" class="form-control" value="<?php echo $sirket['unvan']; ?>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Vergi Dairesi</label>
+                            <input type="text" name="vergi_dairesi" class="form-control" value="<?php echo $sirket['vergi_dairesi']; ?>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Vergi No</label>
+                            <input type="text" name="vergi_no" class="form-control" value="<?php echo $sirket['vergi_no']; ?>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Adres</label>
+                            <textarea name="adres" class="form-control" rows="3" required><?php echo $sirket['adres']; ?></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Şehir</label>
+                            <input type="text" name="sehir" class="form-control" value="<?php echo $sirket['sehir']; ?>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Telefon</label>
+                            <input type="text" name="telefon" class="form-control" value="<?php echo $sirket['telefon']; ?>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">E-posta</label>
+                            <input type="email" name="email" class="form-control" value="<?php echo $sirket['email']; ?>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Web Sitesi</label>
+                            <input type="url" name="web" class="form-control" value="<?php echo $sirket['web']; ?>">
                         </div>
                     </div>
-                </div>
 
-                <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Şirket Ünvanı</label>
-                        <input type="text" name="unvan" class="form-control" 
-                               value="<?php echo $sirket['unvan']; ?>" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Web Sitesi</label>
-                        <input type="text" name="web" class="form-control" 
-                               value="<?php echo $sirket['web']; ?>">
-                    </div>
-                </div>
+                        <h5 class="card-title mb-4">Diğer Bilgiler</h5>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Adres</label>
-                        <textarea name="adres" class="form-control" rows="2" required><?php echo $sirket['adres']; ?></textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Şehir</label>
-                        <input type="text" name="sehir" class="form-control" 
-                               value="<?php echo $sirket['sehir']; ?>" required>
-                    </div>
-                </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mersis No</label>
+                            <input type="text" name="mersis_no" class="form-control" value="<?php echo $sirket['mersis_no']; ?>">
+                        </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Telefon</label>
-                        <input type="text" name="telefon" class="form-control" 
-                               value="<?php echo $sirket['telefon']; ?>" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">E-posta</label>
-                        <input type="email" name="email" class="form-control" 
-                               value="<?php echo $sirket['email']; ?>" required>
-                    </div>
-                </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ticaret Sicil No</label>
+                            <input type="text" name="ticaret_sicil_no" class="form-control" value="<?php echo $sirket['ticaret_sicil_no']; ?>">
+                        </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Vergi Dairesi</label>
-                        <input type="text" name="vergi_dairesi" class="form-control" 
-                               value="<?php echo $sirket['vergi_dairesi']; ?>" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Vergi Numarası</label>
-                        <input type="text" name="vergi_no" class="form-control" 
-                               value="<?php echo $sirket['vergi_no']; ?>" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Mersis No</label>
-                        <input type="text" name="mersis_no" class="form-control" 
-                               value="<?php echo $sirket['mersis_no']; ?>">
-                    </div>
-                </div>
+                        <div class="mb-3">
+                            <label class="form-label">Banka Adı</label>
+                            <input type="text" name="banka_adi" class="form-control" value="<?php echo $sirket['banka_adi']; ?>">
+                        </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Ticaret Sicil No</label>
-                        <input type="text" name="ticaret_sicil_no" class="form-control" 
-                               value="<?php echo $sirket['ticaret_sicil_no']; ?>">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Banka Adı</label>
-                        <input type="text" name="banka_adi" class="form-control" 
-                               value="<?php echo $sirket['banka_adi']; ?>">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">IBAN</label>
-                        <input type="text" name="iban" class="form-control" 
-                               value="<?php echo $sirket['iban']; ?>">
+                        <div class="mb-3">
+                            <label class="form-label">IBAN</label>
+                            <input type="text" name="iban" class="form-control" value="<?php echo $sirket['iban']; ?>">
+                        </div>
+
+                        <h5 class="card-title mb-4">Şirket Ayarları</h5>
+
+                        <div class="mb-3">
+                            <label class="form-label">Varsayılan Fatura Notu</label>
+                            <textarea name="fatura_not" class="form-control" rows="3"><?php echo $sirket['fatura_not']; ?></textarea>
+                            <div class="form-text">Bu not tüm faturalarda varsayılan olarak görünecektir.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Varsayılan KDV Oranı (%)</label>
+                            <input type="number" name="varsayilan_kdv" class="form-control" value="<?php echo $sirket['varsayilan_kdv'] ?? 18; ?>" min="0" max="100">
+                            <div class="form-text">Yeni fatura oluştururken kullanılacak varsayılan KDV oranı.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" name="aktif" class="form-check-input" value="1" <?php echo $sirket['aktif'] ? 'checked' : ''; ?>>
+                                <label class="form-check-label">Aktif</label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -240,7 +281,6 @@ require_once 'templates/header.php';
                 </div>
 
                 <div class="text-end">
-                    <a href="sirketler.php" class="btn btn-secondary">İptal</a>
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-save"></i> Kaydet
                     </button>
