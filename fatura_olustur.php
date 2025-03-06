@@ -1,5 +1,10 @@
 <?php
-require_once 'templates/header.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once 'includes/config.php';
+require_once 'includes/db.php';
+require_once 'includes/functions.php';
 
 // Oturum ve şirket kontrolü
 if (!isset($_SESSION['user'])) {
@@ -89,6 +94,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Müşterileri al
 $musteriler = $db->query("SELECT * FROM customers WHERE company_id = :company_id ORDER BY firma_adi",
     [':company_id' => $_SESSION['company_id']])->fetchAll();
+
+// Header'ı en son dahil et
+require_once 'templates/header.php';
 ?>
 
 <div class="container-fluid">
