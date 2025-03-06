@@ -46,6 +46,10 @@ $kalemler = $db->query($sql, [':invoice_id' => $fatura_id])->fetchAll();
 $sql = "SELECT * FROM customers WHERE company_id = :company_id ORDER BY firma_adi";
 $musteriler = $db->query($sql, [':company_id' => $_SESSION['company_id']])->fetchAll();
 
+// Para birimlerini al
+$sql = "SELECT * FROM currencies WHERE aktif = 1 ORDER BY varsayilan DESC, kod";
+$para_birimleri = $db->query($sql)->fetchAll();
+
 // Form gönderildi mi kontrol et
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['csrf_token']) && csrf_token_kontrol($_POST['csrf_token'])) {
@@ -55,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Fatura bilgilerini güncelle
             $sql = "UPDATE invoices SET 
                     customer_id = :customer_id,
+                    currency_id = :currency_id,
                     fatura_tarihi = :fatura_tarihi,
                     vade_tarihi = :vade_tarihi,
                     toplam_tutar = :toplam_tutar,
@@ -68,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':id' => $fatura_id,
                 ':company_id' => $_SESSION['company_id'],
                 ':customer_id' => $_POST['customer_id'],
+                ':currency_id' => $_POST['currency_id'],
                 ':fatura_tarihi' => $_POST['fatura_tarihi'],
                 ':vade_tarihi' => $_POST['vade_tarihi'],
                 ':toplam_tutar' => $_POST['toplam_tutar'],
@@ -143,12 +149,24 @@ require_once 'templates/header.php';
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <label for="currency_id" class="form-label">Para Birimi</label>
+                    <select name="currency_id" id="currency_id" class="form-select" required>
+                        <?php foreach ($para_birimleri as $para_birimi): ?>
+                            <option value="<?php echo $para_birimi['id']; ?>" 
+                                    data-symbol="<?php echo $para_birimi['sembol']; ?>"
+                                    <?php echo $para_birimi['id'] == $fatura['currency_id'] ? 'selected' : ''; ?>>
+                                <?php echo $para_birimi['kod']; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label for="fatura_tarihi" class="form-label">Fatura Tarihi</label>
                     <input type="date" name="fatura_tarihi" id="fatura_tarihi" class="form-control" 
                            value="<?php echo $fatura['fatura_tarihi']; ?>" required>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="vade_tarihi" class="form-label">Vade Tarihi</label>
                     <input type="date" name="vade_tarihi" id="vade_tarihi" class="form-control" 
                            value="<?php echo $fatura['vade_tarihi']; ?>">
@@ -257,6 +275,16 @@ require_once 'templates/header.php';
 
 <script>
 $(document).ready(function() {
+    // Para birimi sembolünü güncelle
+    function updateCurrencySymbol() {
+        var symbol = $('#currency_id option:selected').data('symbol');
+        $('.currency-symbol').text(symbol);
+    }
+
+    // Sayfa yüklendiğinde ve para birimi değiştiğinde sembolü güncelle
+    updateCurrencySymbol();
+    $('#currency_id').on('change', updateCurrencySymbol);
+
     // Yeni kalem satırı ekle
     $('#kalemEkle').click(function() {
         var yeniSatir = `

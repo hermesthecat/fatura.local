@@ -22,9 +22,10 @@ if (!isset($_GET['id'])) {
 $db = Database::getInstance();
 
 // Fatura bilgilerini al
-$fatura = $db->query("SELECT f.*, c.* 
+$fatura = $db->query("SELECT f.*, c.*, cur.sembol as para_birimi_sembol, cur.kod as para_birimi_kod 
     FROM invoices f 
     INNER JOIN customers c ON c.id = f.customer_id 
+    INNER JOIN currencies cur ON cur.id = f.currency_id 
     WHERE f.id = :id AND f.company_id = :company_id",
     [':id' => $_GET['id'], ':company_id' => $_SESSION['company_id']])->fetch();
 
@@ -69,6 +70,10 @@ $kalemler = $db->query("SELECT * FROM invoice_items WHERE invoice_id = :invoice_
                                 <tr>
                                     <th>Fatura No:</th>
                                     <td><?php echo $fatura['fatura_no']; ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Para Birimi:</th>
+                                    <td><?php echo $fatura['para_birimi_kod']; ?> (<?php echo $fatura['para_birimi_sembol']; ?>)</td>
                                 </tr>
                                 <tr>
                                     <th>Fatura Tarihi:</th>
@@ -124,10 +129,12 @@ $kalemler = $db->query("SELECT * FROM invoice_items WHERE invoice_id = :invoice_
                                     <td><?php echo $kalem['urun_adi']; ?></td>
                                     <td class="text-end"><?php echo $kalem['miktar']; ?></td>
                                     <td class="text-end">
-                                        <?php echo number_format($kalem['birim_fiyat'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                                        <?php echo number_format($kalem['birim_fiyat'], 2, ',', '.'); ?>
+                                        <?php echo $fatura['para_birimi_sembol']; ?>
                                     </td>
                                     <td class="text-end">
-                                        <?php echo number_format($kalem['toplam_fiyat'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                                        <?php echo number_format($kalem['toplam_fiyat'], 2, ',', '.'); ?>
+                                        <?php echo $fatura['para_birimi_sembol']; ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -136,19 +143,24 @@ $kalemler = $db->query("SELECT * FROM invoice_items WHERE invoice_id = :invoice_
                                 <tr>
                                     <th colspan="3" class="text-end">Ara Toplam:</th>
                                     <td class="text-end">
-                                        <?php echo number_format($fatura['toplam_tutar'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                                        <?php echo number_format($fatura['toplam_tutar'], 2, ',', '.'); ?>
+                                        <?php echo $fatura['para_birimi_sembol']; ?>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th colspan="3" class="text-end">KDV (<?php echo $fatura['kdv_orani']; ?>%):</th>
+                                    <th colspan="4" class="text-end">KDV (%<?php echo $fatura['kdv_orani']; ?>):</th>
                                     <td class="text-end">
-                                        <?php echo number_format($fatura['kdv_tutari'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                                        <?php echo number_format($fatura['kdv_tutari'], 2, ',', '.'); ?>
+                                        <?php echo $fatura['para_birimi_sembol']; ?>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th colspan="3" class="text-end">Genel Toplam:</th>
+                                    <th colspan="4" class="text-end">Genel Toplam:</th>
                                     <td class="text-end">
-                                        <?php echo number_format($fatura['genel_toplam'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                                        <strong>
+                                            <?php echo number_format($fatura['genel_toplam'], 2, ',', '.'); ?>
+                                            <?php echo $fatura['para_birimi_sembol']; ?>
+                                        </strong>
                                     </td>
                                 </tr>
                             </tfoot>
