@@ -31,6 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $yeni_no = $son_no + 1;
         $fatura_no = FATURA_PREFIX . str_pad($yeni_no, 6, '0', STR_PAD_LEFT);
 
+        // Vade tarihini kontrol et
+        $vade_tarihi = !empty($_POST['vade_tarihi']) ? $_POST['vade_tarihi'] : null;
+
         // Fatura başlığını ekle
         $sql = "INSERT INTO invoices (
             company_id, fatura_no, customer_id, fatura_tarihi, vade_tarihi, 
@@ -45,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':fatura_no' => $fatura_no,
             ':customer_id' => $_POST['customer_id'],
             ':fatura_tarihi' => $_POST['fatura_tarihi'],
-            ':vade_tarihi' => $_POST['vade_tarihi'],
+            ':vade_tarihi' => $vade_tarihi,
             ':toplam_tutar' => $_POST['toplam_tutar'],
             ':kdv_orani' => $_POST['kdv_orani'],
             ':kdv_tutari' => $_POST['kdv_tutari'],
@@ -121,7 +124,8 @@ $musteriler = $db->query("SELECT * FROM customers WHERE company_id = :company_id
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Vade Tarihi</label>
-                                <input type="date" name="vade_tarihi" class="form-control">
+                                <input type="date" name="vade_tarihi" class="form-control" 
+                                       value="<?php echo date('Y-m-d'); ?>">
                             </div>
                         </div>
 
