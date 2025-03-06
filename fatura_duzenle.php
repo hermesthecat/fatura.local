@@ -1,5 +1,22 @@
 <?php
-require_once 'templates/header.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once 'includes/config.php';
+require_once 'includes/db.php';
+require_once 'includes/functions.php';
+
+// Oturum kontrolü
+if (!isset($_SESSION['user'])) {
+    header('Location: login.php');
+    exit;
+}
+
+if (!isset($_SESSION['company_id'])) {
+    hata("Lütfen önce bir şirket seçin!");
+    header('Location: index.php');
+    exit;
+}
 
 // Fatura ID kontrolü
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
@@ -12,8 +29,8 @@ $fatura_id = $_GET['id'];
 $db = Database::getInstance();
 
 // Fatura bilgilerini al
-$sql = "SELECT * FROM invoices WHERE id = :id";
-$fatura = $db->query($sql, [':id' => $fatura_id])->fetch();
+$sql = "SELECT * FROM invoices WHERE id = :id AND company_id = :company_id";
+$fatura = $db->query($sql, [':id' => $fatura_id, ':company_id' => $_SESSION['company_id']])->fetch();
 
 if (!$fatura) {
     hata("Fatura bulunamadı!");
@@ -26,8 +43,8 @@ $sql = "SELECT * FROM invoice_items WHERE invoice_id = :invoice_id ORDER BY id";
 $kalemler = $db->query($sql, [':invoice_id' => $fatura_id])->fetchAll();
 
 // Müşteri listesini al
-$sql = "SELECT * FROM customers ORDER BY firma_adi";
-$musteriler = $db->query($sql)->fetchAll();
+$sql = "SELECT * FROM customers WHERE company_id = :company_id ORDER BY firma_adi";
+$musteriler = $db->query($sql, [':company_id' => $_SESSION['company_id']])->fetchAll();
 
 // Form gönderildi mi kontrol et
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -45,10 +62,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     kdv_tutari = :kdv_tutari,
                     genel_toplam = :genel_toplam,
                     aciklama = :aciklama
-                    WHERE id = :id";
+                    WHERE id = :id AND company_id = :company_id";
             
             $params = [
                 ':id' => $fatura_id,
+                ':company_id' => $_SESSION['company_id'],
                 ':customer_id' => $_POST['customer_id'],
                 ':fatura_tarihi' => $_POST['fatura_tarihi'],
                 ':vade_tarihi' => $_POST['vade_tarihi'],
@@ -93,6 +111,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Header'ı en son dahil et
+require_once 'templates/header.php';
 ?>
 
 <div class="card">
@@ -213,7 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                            class="form-control" step="0.01" value="<?php echo $fatura['kdv_tutari']; ?>" readonly>
                                 </div>
                             </div>
-                            <div class="row">
+                            <div class="row mb-2">
                                 <label class="col-sm-4 col-form-label">Genel Toplam:</label>
                                 <div class="col-sm-8">
                                     <input type="number" name="genel_toplam" id="genel_toplam" 
@@ -226,7 +247,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="text-end">
-                <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Değişiklikleri Kaydet
+                </button>
             </div>
         </form>
     </div>
