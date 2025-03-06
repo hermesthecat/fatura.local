@@ -1,5 +1,8 @@
 <?php
-require_once 'templates/header.php';
+session_start();
+require_once 'includes/config.php';
+require_once 'includes/db.php';
+require_once 'includes/functions.php';
 
 // Müşteri ID kontrolü
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
@@ -53,6 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Header'ı en son dahil et
+require_once 'templates/header.php';
 ?>
 
 <div class="card">
