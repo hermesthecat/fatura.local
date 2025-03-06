@@ -12,6 +12,8 @@ require_once 'includes/functions.php';
     <title>Fatura Yönetim Sistemi</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <!-- SweetAlert2 CSS -->
@@ -40,6 +42,9 @@ require_once 'includes/functions.php';
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="fatura_listele.php">Faturalar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="musteri_listele.php">Müşteriler</a>
                     </li>
                 </ul>
             </div>
