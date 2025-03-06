@@ -25,35 +25,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Kullanıcı adı veya şifre hatalı!');
         }
 
-        // Son giriş zamanını güncelle
-        $db->query("UPDATE users SET son_giris = NOW() WHERE id = :id", 
-            [':id' => $user['id']]);
-
-        // Session'a kullanıcı bilgilerini kaydet
-        $_SESSION['user'] = [
-            'id' => $user['id'],
-            'username' => $user['username'],
-            'ad_soyad' => $user['ad_soyad'],
-            'email' => $user['email'],
-            'rol' => $user['rol']
-        ];
-
-        // Admin rolü varsa admin session'ı oluştur
+        // Oturum bilgilerini kaydet
+        $_SESSION['user'] = true;
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_name'] = $user['ad_soyad'];
+        
         if ($user['rol'] === 'admin') {
             $_SESSION['admin'] = true;
         }
-
-        // Beni hatırla seçeneği işaretlenmişse cookie oluştur
-        if ($hatirla) {
-            $token = bin2hex(random_bytes(32));
-            setcookie('remember_token', $token, time() + (86400 * 30), '/'); // 30 gün
-            
-            // Token'ı veritabanına kaydet (bu tabloyu da oluşturmak gerekiyor)
-            $db->query("INSERT INTO remember_tokens (user_id, token, expires_at) 
-                       VALUES (:user_id, :token, DATE_ADD(NOW(), INTERVAL 30 DAY))",
-                [':user_id' => $user['id'], ':token' => $token]);
+        
+        // Kullanıcının şirketlerini al
+        $sirketler = $db->query("SELECT c.* FROM companies c 
+            INNER JOIN user_companies uc ON uc.company_id = c.id 
+            WHERE uc.user_id = :user_id AND c.aktif = 1 
+            ORDER BY c.unvan", 
+            [':user_id' => $user['id']])->fetchAll();
+        
+        if (!empty($sirketler)) {
+            $_SESSION['user_companies'] = $sirketler;
+            $_SESSION['company_id'] = $sirketler[0]['id'];
+            $_SESSION['company_unvan'] = $sirketler[0]['unvan'];
         }
-
+        
+        // Son giriş tarihini güncelle
+        $db->query("UPDATE users SET son_giris = NOW() WHERE id = :id", 
+            [':id' => $user['id']]);
+        
+        // Beni hatırla
+        if (isset($_POST['remember'])) {
+            $token = bin2hex(random_bytes(32));
+            $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
+            
+            $db->query("INSERT INTO remember_tokens (user_id, token, expires_at) 
+                VALUES (:user_id, :token, :expires_at)",
+                [':user_id' => $user['id'], ':token' => $token, ':expires_at' => $expires]);
+            
+            setcookie('remember_token', $token, strtotime('+30 days'), '/', '', true, true);
+        }
+        
         // Başarılı mesajı göster ve yönlendir
         basari("Hoş geldiniz, " . $user['ad_soyad']);
         header('Location: index.php');

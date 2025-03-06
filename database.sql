@@ -2,48 +2,8 @@
 CREATE DATABASE IF NOT EXISTS fatura_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE fatura_db;
 
--- Müşteriler tablosu
-CREATE TABLE IF NOT EXISTS customers (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    firma_adi VARCHAR(255) NOT NULL,
-    vergi_no VARCHAR(50),
-    vergi_dairesi VARCHAR(100),
-    adres TEXT,
-    telefon VARCHAR(20),
-    email VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Faturalar tablosu
-CREATE TABLE IF NOT EXISTS invoices (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    fatura_no VARCHAR(50) NOT NULL UNIQUE,
-    customer_id INT NOT NULL,
-    fatura_tarihi DATE NOT NULL,
-    vade_tarihi DATE,
-    toplam_tutar DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    kdv_orani INT NOT NULL DEFAULT 18,
-    kdv_tutari DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    genel_toplam DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    aciklama TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Fatura kalemleri tablosu
-CREATE TABLE IF NOT EXISTS invoice_items (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    invoice_id INT NOT NULL,
-    urun_adi VARCHAR(255) NOT NULL,
-    miktar INT NOT NULL DEFAULT 1,
-    birim_fiyat DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    toplam_fiyat DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Şirket Ayarları Tablosu
-CREATE TABLE IF NOT EXISTS `company_settings` (
+-- Şirketler tablosu
+CREATE TABLE IF NOT EXISTS `companies` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `unvan` varchar(255) NOT NULL,
     `adres` text NOT NULL,
@@ -58,11 +18,74 @@ CREATE TABLE IF NOT EXISTS `company_settings` (
     `banka_adi` varchar(255) NOT NULL,
     `iban` varchar(50) NOT NULL,
     `logo` varchar(255) DEFAULT NULL,
+    `aktif` tinyint(1) NOT NULL DEFAULT 1,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Kullanıcılar tablosu
+-- Şirket ayarları tablosu
+CREATE TABLE IF NOT EXISTS `company_settings` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `company_id` int(11) NOT NULL,
+    `ayar_adi` varchar(50) NOT NULL,
+    `ayar_degeri` varchar(255) NOT NULL,
+    `aciklama` varchar(255) DEFAULT NULL,
+    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `company_setting_unique` (`company_id`, `ayar_adi`),
+    FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Müşteriler tablosu güncelleme
+DROP TABLE IF EXISTS customers;
+CREATE TABLE IF NOT EXISTS customers (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `company_id` int(11) NOT NULL,
+    `firma_adi` VARCHAR(255) NOT NULL,
+    `vergi_no` VARCHAR(50),
+    `vergi_dairesi` VARCHAR(100),
+    `adres` TEXT,
+    `telefon` VARCHAR(20),
+    `email` VARCHAR(100),
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Faturalar tablosu güncelleme
+DROP TABLE IF EXISTS invoices;
+CREATE TABLE IF NOT EXISTS invoices (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `company_id` int(11) NOT NULL,
+    `fatura_no` VARCHAR(50) NOT NULL,
+    `customer_id` INT NOT NULL,
+    `fatura_tarihi` DATE NOT NULL,
+    `vade_tarihi` DATE,
+    `toplam_tutar` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    `kdv_orani` INT NOT NULL DEFAULT 18,
+    `kdv_tutari` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    `genel_toplam` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    `aciklama` TEXT,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `company_invoice_unique` (`company_id`, `fatura_no`),
+    FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`customer_id`) REFERENCES customers(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Fatura kalemleri tablosu
+CREATE TABLE IF NOT EXISTS invoice_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_id INT NOT NULL,
+    urun_adi VARCHAR(255) NOT NULL,
+    miktar INT NOT NULL DEFAULT 1,
+    birim_fiyat DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    toplam_fiyat DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Kullanıcılar tablosu güncelleme
+DROP TABLE IF EXISTS users;
 CREATE TABLE IF NOT EXISTS `users` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `username` varchar(50) NOT NULL UNIQUE,
@@ -76,14 +99,17 @@ CREATE TABLE IF NOT EXISTS `users` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Örnek müşteri verisi
-INSERT INTO customers (firma_adi, vergi_no, vergi_dairesi, adres, telefon, email) VALUES
-('Örnek Firma A.Ş.', '1234567890', 'Ankara VD', 'Kızılay Mah. Atatürk Bulvarı No:123 Çankaya/Ankara', '0312 123 45 67', 'info@ornekfirma.com'),
-('Test Şirketi Ltd. Şti.', '9876543210', 'İstanbul VD', 'Levent Mah. Büyükdere Cad. No:456 Beşiktaş/İstanbul', '0212 987 65 43', 'info@testsirketi.com');
-
--- Varsayılan değerler
-INSERT INTO `company_settings` (`unvan`, `adres`, `sehir`, `telefon`, `email`, `vergi_dairesi`, `vergi_no`, `web`, `mersis_no`, `ticaret_sicil_no`, `banka_adi`, `iban`) 
-VALUES ('A. KEREM GÖK', 'Şirket Adresi, Sokak No: 123', '34000, İstanbul / Türkiye', '+90 (212) 123 45 67', 'info@keremgok.com', 'KADIKÖY', '1234567890', 'www.keremgok.com', '0123456789000001', '123456-0', 'X BANKASI', 'TR00 0000 0000 0000 0000 0000 00');
+-- Kullanıcı-Şirket ilişki tablosu
+CREATE TABLE IF NOT EXISTS `user_companies` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `user_id` int(11) NOT NULL,
+    `company_id` int(11) NOT NULL,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `user_company_unique` (`user_id`, `company_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Varsayılan admin kullanıcısı (şifre: 123456)
 INSERT INTO `users` (`username`, `password`, `ad_soyad`, `email`, `rol`) 
@@ -101,7 +127,7 @@ CREATE TABLE IF NOT EXISTS `remember_tokens` (
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Sistem Ayarları Tablosu
+-- Sistem Ayarları Tablosu (Genel ayarlar için)
 CREATE TABLE IF NOT EXISTS `system_settings` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `ayar_adi` varchar(50) NOT NULL UNIQUE,

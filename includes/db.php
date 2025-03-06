@@ -1,25 +1,24 @@
 <?php
 
 /**
- * Veritabanı Bağlantı Sınıfı
+ * Veritabanı Sınıfı
  * @author A. Kerem Gök
  */
 
 class Database
 {
-    private $db;
     private static $instance = null;
+    private $pdo;
 
     private function __construct()
     {
         try {
             $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
-            $this->db = new PDO($dsn, DB_USER, DB_PASS);
-            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-            $this->db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+            $this->pdo = new PDO($dsn, DB_USER, DB_PASS);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            die("Bağlantı hatası: " . $e->getMessage());
+            die("Veritabanı bağlantı hatası: " . $e->getMessage());
         }
     }
 
@@ -34,31 +33,19 @@ class Database
     public function query($sql, $params = [])
     {
         try {
-            $stmt = $this->db->prepare($sql);
+            $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
             return $stmt;
         } catch (PDOException $e) {
-            die("Sorgu hatası: " . $e->getMessage());
+            throw new Exception("Sorgu hatası: " . $e->getMessage());
         }
     }
 
-    public function getLastInsertId()
+    public function lastInsertId()
     {
-        return $this->db->lastInsertId();
+        return $this->pdo->lastInsertId();
     }
 
-    public function beginTransaction()
-    {
-        return $this->db->beginTransaction();
-    }
-
-    public function commit()
-    {
-        return $this->db->commit();
-    }
-
-    public function rollback()
-    {
-        return $this->db->rollBack();
-    }
+    private function __clone() {}
+    private function __wakeup() {}
 }

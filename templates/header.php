@@ -64,46 +64,83 @@ if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php')
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="index.php">Fatura Sistemi</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">Ana Sayfa</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="fatura_olustur.php">Yeni Fatura</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="fatura_listele.php">Faturalar</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="musteri_listele.php">Müşteriler</a>
-                    </li>
-                    <?php if (isset($_SESSION['admin'])): ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin.php">Ayarlar</a>
-                    </li>
-                    <?php endif; ?>
-                </ul>
                 <?php if (isset($_SESSION['user'])): ?>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
-                           data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle"></i> 
-                            <?php echo $_SESSION['user']['ad_soyad']; ?>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="logout.php">
-                                <i class="bi bi-box-arrow-right"></i> Çıkış Yap
-                            </a></li>
-                        </ul>
-                    </li>
-                </ul>
+                    <ul class="navbar-nav me-auto">
+                        <?php if (isset($_SESSION['company_id'])): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="fatura_olustur.php">
+                                <i class="bi bi-plus-circle"></i> Yeni Fatura
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="fatura_listele.php">
+                                <i class="bi bi-list"></i> Faturalar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="musteri_listele.php">
+                                <i class="bi bi-people"></i> Müşteriler
+                            </a>
+                        </li>
+                        <?php endif; ?>
+                        <?php if (isset($_SESSION['admin'])): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="sirketler.php">
+                                <i class="bi bi-building"></i> Şirketler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="admin.php">
+                                <i class="bi bi-gear"></i> Ayarlar
+                            </a>
+                        </li>
+                        <?php endif; ?>
+                    </ul>
+                    
+                    <ul class="navbar-nav">
+                        <?php if (isset($_SESSION['user_companies'])): ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                <i class="bi bi-building"></i> 
+                                <?php echo isset($_SESSION['company_id']) ? $_SESSION['company_unvan'] : 'Şirket Seç'; ?>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <?php foreach ($_SESSION['user_companies'] as $company): ?>
+                                <li>
+                                    <a class="dropdown-item <?php echo isset($_SESSION['company_id']) && $_SESSION['company_id'] == $company['id'] ? 'active' : ''; ?>" 
+                                       href="sirket_sec.php?id=<?php echo $company['id']; ?>">
+                                        <?php echo $company['unvan']; ?>
+                                    </a>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </li>
+                        <?php endif; ?>
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> <?php echo $_SESSION['user_name']; ?>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="profil.php">
+                                        <i class="bi bi-person"></i> Profil
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="logout.php">
+                                        <i class="bi bi-box-arrow-right"></i> Çıkış
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
                 <?php endif; ?>
             </div>
         </div>
