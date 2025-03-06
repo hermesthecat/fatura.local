@@ -36,7 +36,7 @@ require_once 'templates/header.php';
     </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-bordered table-hover" id="musteriTablosu">
+            <table class="table table-striped table-hover table-responsive" id="musteriTablosu">
                 <thead>
                     <tr>
                         <th>Firma Adı</th>

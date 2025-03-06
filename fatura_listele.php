@@ -40,7 +40,7 @@ $faturalar = $db->query("SELECT f.*, c.firma_adi as musteri_adi, cur.sembol as p
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-striped table-hover" id="faturaTablosu">
+                <table class="table table-striped table-hover table-responsive" id="faturaTablosu">
                     <thead>
                         <tr>
                             <th>Fatura No</th>

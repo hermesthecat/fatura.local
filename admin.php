@@ -192,7 +192,7 @@ $users = $db->query("SELECT * FROM users ORDER BY ad_soyad")->fetchAll();
     <div class="card shadow-sm border-0">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="table table-striped table-hover table-responsive">
                     <thead class="table-light">
                         <tr>
                             <th>Ad Soyad</th>
