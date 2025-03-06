@@ -33,6 +33,9 @@ $kalemler = $db->query($sql, [':invoice_id' => $fatura_id])->fetchAll();
     <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title">Fatura Detayı</h3>
         <div class="btn-group">
+            <a href="fatura_pdf.php?id=<?php echo $fatura_id; ?>" class="btn btn-primary" target="_blank">
+                <i class="bi bi-file-pdf"></i> PDF
+            </a>
             <button type="button" class="btn btn-primary" onclick="window.print()">
                 <i class="bi bi-printer"></i> Yazdır
             </button>
