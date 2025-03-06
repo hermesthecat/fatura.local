@@ -25,16 +25,30 @@ if (isset($_POST['sil']) && isset($_POST['id'])) {
     }
 }
 
-// Şirketleri listele
-$sirketler = $db->query("SELECT c.*, COUNT(DISTINCT i.id) as fatura_sayisi, COUNT(DISTINCT m.id) as musteri_sayisi, 
-    GROUP_CONCAT(DISTINCT u.ad_soyad) as kullanicilar
+// Şirketleri al
+$sql = "SELECT 
+    c.id,
+    c.unvan,
+    c.vergi_no,
+    c.aktif,
+    c.telefon,
+    c.email,
+    COUNT(DISTINCT i.id) as fatura_sayisi,
+    COUNT(DISTINCT m.id) as musteri_sayisi,
+    GROUP_CONCAT(
+        DISTINCT CONCAT(u.ad_soyad, ' (', u.email, ')') 
+        ORDER BY u.ad_soyad 
+        SEPARATOR ', '
+    ) as kullanicilar
     FROM companies c 
     LEFT JOIN invoices i ON i.company_id = c.id 
     LEFT JOIN customers m ON m.company_id = c.id
     LEFT JOIN user_companies uc ON uc.company_id = c.id
     LEFT JOIN users u ON u.id = uc.user_id
-    GROUP BY c.id
-    ORDER BY c.unvan")->fetchAll();
+    GROUP BY c.id, c.unvan, c.vergi_no, c.aktif
+    ORDER BY c.unvan";
+
+$sirketler = $db->query($sql)->fetchAll();
 ?>
 
 <div class="container-fluid">

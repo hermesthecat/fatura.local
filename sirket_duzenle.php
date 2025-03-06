@@ -14,19 +14,39 @@ if (!isset($_GET['id'])) {
 
 // Şirket ve ayarlarını al
 $sql = "SELECT 
-    c.*,
-    MAX(CASE WHEN cs.ayar_adi = 'FATURA_NOT' THEN cs.ayar_degeri END) as fatura_not,
-    MAX(CASE WHEN cs.ayar_adi = 'VARSAYILAN_KDV' THEN cs.ayar_degeri END) as varsayilan_kdv
+    c.id,
+    c.unvan,
+    c.vergi_dairesi,
+    c.vergi_no,
+    c.adres,
+    c.sehir,
+    c.telefon,
+    c.email,
+    c.web,
+    c.mersis_no,
+    c.ticaret_sicil_no,
+    c.banka_adi,
+    c.iban,
+    c.logo,
+    c.aktif,
+    COALESCE(MAX(CASE WHEN cs.ayar_adi = 'FATURA_NOT' THEN cs.ayar_degeri END), '') as fatura_not,
+    COALESCE(MAX(CASE WHEN cs.ayar_adi = 'VARSAYILAN_KDV' THEN cs.ayar_degeri END), '18') as varsayilan_kdv
     FROM companies c 
     LEFT JOIN company_settings cs ON cs.company_id = c.id 
     WHERE c.id = :id
-    GROUP BY c.id";
+    GROUP BY c.id, c.unvan, c.vergi_dairesi, c.vergi_no, c.adres, c.sehir, 
+             c.telefon, c.email, c.web, c.mersis_no, c.ticaret_sicil_no, 
+             c.banka_adi, c.iban, c.logo, c.aktif";
 $sirket = $db->query($sql, [':id' => $_GET['id']])->fetch();
 
 if (!$sirket) {
     header('Location: sirketler.php');
     exit;
 }
+
+// Varsayılan değerler
+$sirket['fatura_not'] = $sirket['fatura_not'] ?? '';
+$sirket['varsayilan_kdv'] = $sirket['varsayilan_kdv'] ?? '18';
 
 // Şirketin kullanıcılarını al
 $sirket_kullanicilari = $db->query("SELECT user_id FROM user_companies WHERE company_id = :company_id",
@@ -252,7 +272,7 @@ require_once 'templates/header.php';
 
                         <div class="mb-3">
                             <label class="form-label">Varsayılan KDV Oranı (%)</label>
-                            <input type="number" name="varsayilan_kdv" class="form-control" value="<?php echo $sirket['varsayilan_kdv'] ?? 18; ?>" min="0" max="100">
+                            <input type="number" name="varsayilan_kdv" class="form-control" value="<?php echo $sirket['varsayilan_kdv']; ?>" min="0" max="100">
                             <div class="form-text">Yeni fatura oluştururken kullanılacak varsayılan KDV oranı.</div>
                         </div>
 
