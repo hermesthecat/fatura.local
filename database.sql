@@ -112,9 +112,36 @@ CREATE TABLE IF NOT EXISTS `user_companies` (
     FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Varsayılan admin kullanıcısı (şifre: 123456)
+-- İlk admin kullanıcısı
 INSERT INTO `users` (`username`, `password`, `ad_soyad`, `email`, `rol`) 
 VALUES ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'A. Kerem Gök', 'admin@keremgok.com', 'admin');
+
+-- Test şirketi
+INSERT INTO `companies` (
+    `unvan`, `adres`, `sehir`, `telefon`, `email`, 
+    `vergi_dairesi`, `vergi_no`, `web`, `mersis_no`, 
+    `ticaret_sicil_no`, `banka_adi`, `iban`, `aktif`
+) VALUES (
+    'Test Şirketi A.Ş.', 
+    'Test Mahallesi Test Sokak No:1', 
+    'İstanbul', 
+    '0212 123 45 67',
+    'info@testfirma.com',
+    'Test Vergi Dairesi',
+    '1234567890',
+    'www.testfirma.com',
+    '0123456789012345',
+    '123456',
+    'Test Bank',
+    'TR12 3456 7890 1234 5678 9012 34',
+    1
+);
+
+-- Admin kullanıcısını test şirketine ekle
+INSERT INTO `user_companies` (`user_id`, `company_id`)
+SELECT 
+    (SELECT `id` FROM `users` WHERE `username` = 'admin'),
+    (SELECT `id` FROM `companies` WHERE `unvan` = 'Test Şirketi A.Ş.');
 
 -- Remember Tokens tablosu
 CREATE TABLE IF NOT EXISTS `remember_tokens` (
