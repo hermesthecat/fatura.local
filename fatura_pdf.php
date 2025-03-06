@@ -35,17 +35,61 @@ if (!$fatura) {
 $sql = "SELECT * FROM invoice_items WHERE invoice_id = :invoice_id ORDER BY id";
 $kalemler = $db->query($sql, [':invoice_id' => $fatura_id])->fetchAll();
 
+// Şirket bilgileri - Bu bilgileri config.php'ye taşıyabilirsiniz
+$sirket = [
+    'unvan' => 'A. KEREM GÖK',
+    'adres' => 'Şirket Adresi, Sokak No: 123',
+    'sehir' => '34000, İstanbul / Türkiye',
+    'telefon' => '+90 (212) 123 45 67',
+    'email' => 'info@keremgok.com',
+    'vergi_dairesi' => 'KADIKÖY',
+    'vergi_no' => '1234567890',
+    'web' => 'www.keremgok.com',
+    'mersis_no' => '0123456789000001',
+    'ticaret_sicil_no' => '123456-0'
+];
+
 // PDF oluştur
 class MYPDF extends TCPDF {
     public function Header() {
-        $this->SetFont('dejavusans', 'B', 20);
-        $this->Cell(0, 15, 'FATURA', 0, true, 'C', 0, '', 0, false, 'M', 'M');
+        // Logo
+        if (file_exists('assets/img/logo.png')) {
+            $this->Image('assets/img/logo.png', 15, 10, 50);
+        }
+        
+        // Şirket Bilgileri
+        $this->SetFont('dejavusans', 'B', 12);
+        $this->SetXY(70, 10);
+        $this->Cell(0, 6, $GLOBALS['sirket']['unvan'], 0, 1, 'L');
+        
+        $this->SetFont('dejavusans', '', 8);
+        $this->SetX(70);
+        $this->MultiCell(80, 4, $GLOBALS['sirket']['adres'] . "\n" . 
+                               $GLOBALS['sirket']['sehir'] . "\n" .
+                               "Tel: " . $GLOBALS['sirket']['telefon'] . "\n" .
+                               "E-posta: " . $GLOBALS['sirket']['email'] . "\n" .
+                               "Web: " . $GLOBALS['sirket']['web'], 0, 'L');
+                               
+        // Vergi Bilgileri
+        $this->SetXY(150, 10);
+        $this->MultiCell(45, 4, 
+            "Vergi Dairesi: " . $GLOBALS['sirket']['vergi_dairesi'] . "\n" .
+            "VKN: " . $GLOBALS['sirket']['vergi_no'] . "\n" .
+            "Mersis No: " . $GLOBALS['sirket']['mersis_no'] . "\n" .
+            "Ticaret Sicil No: " . $GLOBALS['sirket']['ticaret_sicil_no'],
+            0, 'L');
+
+        // Fatura Başlığı
+        $this->SetFont('dejavusans', 'B', 24);
+        $this->SetXY(150, 30);
+        $this->Cell(45, 10, 'FATURA', 0, 1, 'C');
     }
 
     public function Footer() {
-        $this->SetY(-15);
+        $this->SetY(-20);
         $this->SetFont('dejavusans', 'I', 8);
-        $this->Cell(0, 10, 'Sayfa '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
+        $this->Cell(0, 4, 'Bu fatura elektronik olarak hazırlanmıştır.', 0, 1, 'C');
+        $this->Cell(0, 4, 'Sayfa '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, 0, 'C');
     }
 }
 
@@ -57,92 +101,113 @@ $pdf->SetCreator('Fatura Sistemi');
 $pdf->SetAuthor('A. Kerem Gök');
 $pdf->SetTitle('Fatura #' . $fatura['fatura_no']);
 
-// Varsayılan başlık ayarları
-$pdf->SetHeaderData('', 0, '', '');
-$pdf->setHeaderFont(Array('dejavusans', '', 10));
-$pdf->setFooterFont(Array('dejavusans', '', 8));
-
-// Varsayılan monospace yazı tipi
-$pdf->SetDefaultMonospacedFont('courier');
-
 // Kenar boşlukları
-$pdf->SetMargins(15, 27, 15);
+$pdf->SetMargins(15, 50, 15);
 $pdf->SetHeaderMargin(5);
-$pdf->SetFooterMargin(10);
-
-// Otomatik sayfa sonu
-$pdf->SetAutoPageBreak(TRUE, 25);
-
-// Yazı tipi ölçekleme faktörü
+$pdf->SetFooterMargin(15);
+$pdf->SetAutoPageBreak(TRUE, 20);
 $pdf->setFontSubsetting(true);
-
-// Yazı tipi
-$pdf->SetFont('dejavusans', '', 10);
-
-// Yeni sayfa ekle
 $pdf->AddPage();
 
-// Fatura başlık bilgileri
-$pdf->SetFont('dejavusans', 'B', 12);
-$pdf->Cell(0, 10, 'Fatura No: ' . $fatura['fatura_no'], 0, 1, 'R');
-$pdf->Cell(0, 10, 'Tarih: ' . formatTarih($fatura['fatura_tarihi']), 0, 1, 'R');
+// Fatura ve Müşteri Bilgileri Tablosu
+$pdf->SetFont('dejavusans', '', 10);
+$pdf->Cell(95, 6, '', 'LTR', 0, 'L');
+$pdf->Cell(85, 6, 'Fatura No: ' . $fatura['fatura_no'], 'LTR', 1, 'R');
+
+$pdf->Cell(95, 6, 'SAYIN,', 'LR', 0, 'L');
+$pdf->Cell(85, 6, 'Düzenleme Tarihi: ' . formatTarih($fatura['fatura_tarihi']), 'LR', 1, 'R');
+
+$pdf->SetFont('dejavusans', 'B', 11);
+$pdf->Cell(95, 6, $fatura['firma_adi'], 'LR', 0, 'L');
 if ($fatura['vade_tarihi']) {
-    $pdf->Cell(0, 10, 'Vade Tarihi: ' . formatTarih($fatura['vade_tarihi']), 0, 1, 'R');
+    $pdf->Cell(85, 6, 'Vade Tarihi: ' . formatTarih($fatura['vade_tarihi']), 'LR', 1, 'R');
+} else {
+    $pdf->Cell(85, 6, '', 'LR', 1);
 }
 
-// Müşteri bilgileri
-$pdf->SetFont('dejavusans', 'B', 12);
-$pdf->Cell(0, 10, 'Müşteri Bilgileri:', 0, 1, 'L');
-$pdf->SetFont('dejavusans', '', 10);
-$pdf->Cell(0, 6, 'Firma Adı: ' . $fatura['firma_adi'], 0, 1, 'L');
-$pdf->Cell(0, 6, 'Vergi No: ' . $fatura['vergi_no'], 0, 1, 'L');
-$pdf->Cell(0, 6, 'Vergi Dairesi: ' . $fatura['vergi_dairesi'], 0, 1, 'L');
-$pdf->MultiCell(0, 6, 'Adres: ' . $fatura['adres'], 0, 'L', 0, 1, '', '', true);
-$pdf->Cell(0, 6, 'Telefon: ' . $fatura['telefon'], 0, 1, 'L');
-$pdf->Cell(0, 6, 'E-posta: ' . $fatura['email'], 0, 1, 'L');
+$pdf->SetFont('dejavusans', '', 9);
+$pdf->MultiCell(95, 5, $fatura['adres'], 'LR', 'L');
+$y = $pdf->GetY();
+$pdf->SetXY(110, $pdf->GetY() - 10);
+$pdf->Cell(85, 10, '', 'LR', 1);
 
-$pdf->Ln(10);
+$pdf->Cell(95, 5, 'Vergi Dairesi: ' . $fatura['vergi_dairesi'], 'LR', 0, 'L');
+$pdf->Cell(85, 5, '', 'LR', 1);
+
+$pdf->Cell(95, 5, 'VKN/TCKN: ' . $fatura['vergi_no'], 'LBR', 0, 'L');
+$pdf->Cell(85, 5, '', 'LBR', 1);
+
+$pdf->Ln(5);
 
 // Fatura kalemleri tablosu
-$pdf->SetFont('dejavusans', 'B', 10);
-$header = array('Ürün/Hizmet', 'Miktar', 'Birim Fiyat', 'Toplam');
-$w = array(90, 25, 35, 35);
+$pdf->SetFont('dejavusans', 'B', 9);
+$header = array('Sıra', 'Mal/Hizmet', 'Miktar', 'Birim', 'Birim Fiyat', 'KDV(%)', 'Toplam');
+$w = array(10, 65, 20, 15, 25, 20, 25);
 
 // Başlık
-for($i = 0; $i < count($header); $i++) {
-    $pdf->Cell($w[$i], 7, $header[$i], 1, 0, 'C');
+foreach($header as $i => $h) {
+    $pdf->Cell($w[$i], 7, $h, 1, 0, 'C');
 }
 $pdf->Ln();
 
 // Veriler
-$pdf->SetFont('dejavusans', '', 10);
+$pdf->SetFont('dejavusans', '', 9);
+$sira = 1;
 foreach($kalemler as $kalem) {
-    $pdf->Cell($w[0], 6, $kalem['urun_adi'], 1, 0, 'L');
-    $pdf->Cell($w[1], 6, $kalem['miktar'], 1, 0, 'C');
-    $pdf->Cell($w[2], 6, formatPara($kalem['birim_fiyat']), 1, 0, 'R');
-    $pdf->Cell($w[3], 6, formatPara($kalem['toplam_fiyat']), 1, 0, 'R');
+    $pdf->Cell($w[0], 6, $sira++, 1, 0, 'C');
+    $pdf->Cell($w[1], 6, $kalem['urun_adi'], 1, 0, 'L');
+    $pdf->Cell($w[2], 6, $kalem['miktar'], 1, 0, 'C');
+    $pdf->Cell($w[3], 6, 'Adet', 1, 0, 'C');
+    $pdf->Cell($w[4], 6, formatPara($kalem['birim_fiyat']), 1, 0, 'R');
+    $pdf->Cell($w[5], 6, $fatura['kdv_orani'], 1, 0, 'C');
+    $pdf->Cell($w[6], 6, formatPara($kalem['toplam_fiyat']), 1, 0, 'R');
+    $pdf->Ln();
+}
+
+// Boş satırlar
+$bos_satir = 10 - count($kalemler);
+for($i = 0; $i < $bos_satir; $i++) {
+    $pdf->Cell($w[0], 6, '', 1, 0, 'C');
+    $pdf->Cell($w[1], 6, '', 1, 0, 'L');
+    $pdf->Cell($w[2], 6, '', 1, 0, 'C');
+    $pdf->Cell($w[3], 6, '', 1, 0, 'C');
+    $pdf->Cell($w[4], 6, '', 1, 0, 'R');
+    $pdf->Cell($w[5], 6, '', 1, 0, 'C');
+    $pdf->Cell($w[6], 6, '', 1, 0, 'R');
     $pdf->Ln();
 }
 
 // Toplamlar
-$pdf->SetFont('dejavusans', 'B', 10);
-$pdf->Cell(array_sum($w) - $w[3], 6, 'Ara Toplam:', 1, 0, 'R');
-$pdf->Cell($w[3], 6, formatPara($fatura['toplam_tutar']), 1, 1, 'R');
+$pdf->Ln(5);
+$pdf->SetFont('dejavusans', 'B', 9);
+$pdf->Cell(135, 6, 'YAZI İLE: ' . sayiyiYaziyaCevir($fatura['genel_toplam']) . ' TL', 0, 0, 'L');
+$pdf->Cell(30, 6, 'ARA TOPLAM:', 0, 0, 'R');
+$pdf->Cell(25, 6, formatPara($fatura['toplam_tutar']), 1, 1, 'R');
 
-$pdf->Cell(array_sum($w) - $w[3], 6, 'KDV (' . $fatura['kdv_orani'] . '%):', 1, 0, 'R');
-$pdf->Cell($w[3], 6, formatPara($fatura['kdv_tutari']), 1, 1, 'R');
+$pdf->Cell(135, 6, '', 0, 0, 'L');
+$pdf->Cell(30, 6, 'KDV TOPLAM:', 0, 0, 'R');
+$pdf->Cell(25, 6, formatPara($fatura['kdv_tutari']), 1, 1, 'R');
 
-$pdf->Cell(array_sum($w) - $w[3], 6, 'Genel Toplam:', 1, 0, 'R');
-$pdf->Cell($w[3], 6, formatPara($fatura['genel_toplam']), 1, 1, 'R');
+$pdf->Cell(135, 6, '', 0, 0, 'L');
+$pdf->Cell(30, 6, 'GENEL TOPLAM:', 0, 0, 'R');
+$pdf->Cell(25, 6, formatPara($fatura['genel_toplam']), 1, 1, 'R');
 
-// Açıklama
+// Açıklama ve Notlar
 if ($fatura['aciklama']) {
-    $pdf->Ln(10);
-    $pdf->SetFont('dejavusans', 'B', 10);
-    $pdf->Cell(0, 6, 'Açıklama:', 0, 1, 'L');
-    $pdf->SetFont('dejavusans', '', 10);
-    $pdf->MultiCell(0, 6, $fatura['aciklama'], 0, 'L', 0, 1, '', '', true);
+    $pdf->Ln(5);
+    $pdf->SetFont('dejavusans', 'B', 9);
+    $pdf->Cell(0, 6, 'Açıklamalar:', 0, 1, 'L');
+    $pdf->SetFont('dejavusans', '', 9);
+    $pdf->MultiCell(0, 5, $fatura['aciklama'], 0, 'L');
 }
+
+// Banka Bilgileri ve İban
+$pdf->Ln(5);
+$pdf->SetFont('dejavusans', 'B', 9);
+$pdf->Cell(0, 6, 'Banka Hesap Bilgileri:', 0, 1, 'L');
+$pdf->SetFont('dejavusans', '', 8);
+$pdf->Cell(0, 5, 'Banka: X BANKASI', 0, 1, 'L');
+$pdf->Cell(0, 5, 'IBAN: TR00 0000 0000 0000 0000 0000 00', 0, 1, 'L');
 
 // PDF'i gönder
 $pdf->Output('Fatura_' . $fatura['fatura_no'] . '.pdf', 'I'); 
