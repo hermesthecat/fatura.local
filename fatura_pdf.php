@@ -1,25 +1,12 @@
 <?php
-require_once 'templates/header.php';
-require_once 'vendor/autoload.php';
+// Herhangi bir çıktı olmadığından emin olmak için output buffering'i başlat
+ob_start();
 
-// TCPDF Sabitleri
-define('PDF_PAGE_ORIENTATION', 'P');
-define('PDF_UNIT', 'mm');
-define('PDF_PAGE_FORMAT', 'A4');
-define('PDF_CREATOR', 'Fatura Sistemi');
-define('PDF_HEADER_LOGO', '');
-define('PDF_HEADER_LOGO_WIDTH', 0);
-define('PDF_HEADER_TITLE', '');
-define('PDF_HEADER_STRING', '');
-define('PDF_FONT_SIZE_MAIN', 10);
-define('PDF_FONT_SIZE_DATA', 8);
-define('PDF_FONT_MONOSPACED', 'courier');
-define('PDF_MARGIN_LEFT', 15);
-define('PDF_MARGIN_TOP', 27);
-define('PDF_MARGIN_RIGHT', 15);
-define('PDF_MARGIN_HEADER', 5);
-define('PDF_MARGIN_FOOTER', 10);
-define('PDF_MARGIN_BOTTOM', 25);
+// Gerekli dosyaları include et
+require_once 'includes/config.php';
+require_once 'includes/db.php';
+require_once 'includes/functions.php';
+require_once 'vendor/autoload.php';
 
 // Fatura ID kontrolü
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
@@ -63,28 +50,28 @@ class MYPDF extends TCPDF {
 }
 
 // PDF dokümanı oluştur
-$pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+$pdf = new MYPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 
 // Doküman bilgilerini ayarla
-$pdf->SetCreator(PDF_CREATOR);
+$pdf->SetCreator('Fatura Sistemi');
 $pdf->SetAuthor('A. Kerem Gök');
 $pdf->SetTitle('Fatura #' . $fatura['fatura_no']);
 
 // Varsayılan başlık ayarları
-$pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE, PDF_HEADER_STRING);
-$pdf->setHeaderFont(Array('dejavusans', '', PDF_FONT_SIZE_MAIN));
-$pdf->setFooterFont(Array('dejavusans', '', PDF_FONT_SIZE_DATA));
+$pdf->SetHeaderData('', 0, '', '');
+$pdf->setHeaderFont(Array('dejavusans', '', 10));
+$pdf->setFooterFont(Array('dejavusans', '', 8));
 
 // Varsayılan monospace yazı tipi
-$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+$pdf->SetDefaultMonospacedFont('courier');
 
 // Kenar boşlukları
-$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+$pdf->SetMargins(15, 27, 15);
+$pdf->SetHeaderMargin(5);
+$pdf->SetFooterMargin(10);
 
 // Otomatik sayfa sonu
-$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+$pdf->SetAutoPageBreak(TRUE, 25);
 
 // Yazı tipi ölçekleme faktörü
 $pdf->setFontSubsetting(true);
