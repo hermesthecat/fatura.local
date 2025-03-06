@@ -1,9 +1,7 @@
 <?php
-// Hata raporlamayı devre dışı bırak
-error_reporting(0);
-
-// Önce session'ı başlat
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Herhangi bir çıktı olmadığından emin olmak için output buffering'i başlat
 if (ob_get_level()) ob_end_clean();
@@ -74,16 +72,42 @@ try {
         {
             // Logo
             if (!empty($GLOBALS['sirket']['logo']) && file_exists($GLOBALS['sirket']['logo'])) {
-                $this->Image($GLOBALS['sirket']['logo'], 15, 10, 50);
+                // Logo boyutlarını al
+                $img_size = getimagesize($GLOBALS['sirket']['logo']);
+                $img_width = $img_size[0];
+                $img_height = $img_size[1];
+
+                // En boy oranını koru ve maksimum boyutları belirle
+                $max_width = 40;
+                $max_height = 30;
+
+                // Yeni boyutları hesapla
+                $ratio = min($max_width / $img_width, $max_height / $img_height);
+                $new_width = $img_width * $ratio;
+                $new_height = $img_height * $ratio;
+
+                // Logo'yu yerleştir
+                $this->Image(
+                    $GLOBALS['sirket']['logo'],
+                    15,  // X pozisyonu
+                    10,  // Y pozisyonu
+                    $new_width,  // Genişlik
+                    $new_height,  // Yükseklik
+                    '',  // Format (boş bırakılırsa otomatik)
+                    '',  // URL
+                    'T',  // Hizalama (T: top)
+                    false,  // Sınırlar
+                    300  // DPI
+                );
             }
 
             // Şirket Bilgileri
             $this->SetFont('dejavusans', 'B', 12);
-            $this->SetXY(70, 10);
+            $this->SetXY(60, 10);
             $this->Cell(0, 6, $GLOBALS['sirket']['unvan'], 0, 1, 'L');
 
             $this->SetFont('dejavusans', '', 8);
-            $this->SetX(70);
+            $this->SetX(60);
             $this->MultiCell(80, 4, $GLOBALS['sirket']['adres'] . "\n" .
                 $GLOBALS['sirket']['sehir'] . "\n" .
                 "Tel: " . $GLOBALS['sirket']['telefon'] . "\n" .
