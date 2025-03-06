@@ -2,6 +2,25 @@
 require_once 'templates/header.php';
 require_once 'vendor/autoload.php';
 
+// TCPDF Sabitleri
+define('PDF_PAGE_ORIENTATION', 'P');
+define('PDF_UNIT', 'mm');
+define('PDF_PAGE_FORMAT', 'A4');
+define('PDF_CREATOR', 'Fatura Sistemi');
+define('PDF_HEADER_LOGO', '');
+define('PDF_HEADER_LOGO_WIDTH', 0);
+define('PDF_HEADER_TITLE', '');
+define('PDF_HEADER_STRING', '');
+define('PDF_FONT_SIZE_MAIN', 10);
+define('PDF_FONT_SIZE_DATA', 8);
+define('PDF_FONT_MONOSPACED', 'courier');
+define('PDF_MARGIN_LEFT', 15);
+define('PDF_MARGIN_TOP', 27);
+define('PDF_MARGIN_RIGHT', 15);
+define('PDF_MARGIN_HEADER', 5);
+define('PDF_MARGIN_FOOTER', 10);
+define('PDF_MARGIN_BOTTOM', 25);
+
 // Fatura ID kontrolü
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     hata("Geçersiz fatura ID!");
