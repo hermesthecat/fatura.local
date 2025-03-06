@@ -1,8 +1,67 @@
 <?php
 /**
- * Yardımcı Fonksiyonlar
+ * Genel fonksiyonlar
  * @author A. Kerem Gök
  */
+
+/**
+ * Mesaj ekleme fonksiyonu
+ * @param string $mesaj Gösterilecek mesaj
+ * @param string $tur Mesaj türü (success, danger, warning, info)
+ * @return void
+ */
+function mesaj_ekle($mesaj, $tur = 'info') {
+    if (!isset($_SESSION['mesajlar'])) {
+        $_SESSION['mesajlar'] = [];
+    }
+    $_SESSION['mesajlar'][] = [
+        'mesaj' => $mesaj,
+        'tur' => $tur
+    ];
+}
+
+/**
+ * Mesajları gösterme fonksiyonu
+ * @return string HTML formatında mesajlar
+ */
+function mesaj_goster() {
+    if (isset($_SESSION['mesaj'])) {
+        $mesaj = $_SESSION['mesaj'];
+        unset($_SESSION['mesaj']);
+        return '<div class="alert alert-' . $mesaj['tur'] . ' alert-dismissible fade show" role="alert">
+                    ' . $mesaj['icerik'] . '
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>';
+    }
+    return '';
+}
+
+/**
+ * Para formatı
+ * @param float $tutar Formatlanacak tutar
+ * @return string Formatlanmış tutar
+ */
+function para_format($tutar) {
+    return number_format($tutar, 2, ',', '.');
+}
+
+/**
+ * Tarih formatı
+ * @param string $tarih MySQL tarih formatı
+ * @return string dd.mm.yyyy formatında tarih
+ */
+function tarih_format($tarih) {
+    return date('d.m.Y', strtotime($tarih));
+}
+
+/**
+ * Güvenli string
+ * @param string $str Güvenli hale getirilecek string
+ * @return string Güvenli string
+ */
+function guvenli_str($str) {
+    return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8');
+}
 
 // Para formatı
 function formatPara($tutar) {
@@ -70,19 +129,6 @@ function hata($mesaj) {
         'tur' => 'danger',
         'icerik' => $mesaj
     ];
-}
-
-// Mesaj gösterimi
-function mesaj_goster() {
-    if (isset($_SESSION['mesaj'])) {
-        $mesaj = $_SESSION['mesaj'];
-        unset($_SESSION['mesaj']);
-        return '<div class="alert alert-' . $mesaj['tur'] . ' alert-dismissible fade show" role="alert">
-                    ' . $mesaj['icerik'] . '
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
-    }
-    return '';
 }
 
 function sayiyiYaziyaCevir($sayi) {

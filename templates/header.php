@@ -9,13 +9,17 @@ if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php')
     // Remember token kontrolü
     if (isset($_COOKIE['remember_token'])) {
         $db = Database::getInstance();
-        $token = $db->query("SELECT * FROM remember_tokens 
-                            WHERE token = :token AND expires_at > NOW()", 
-            [':token' => $_COOKIE['remember_token']])->fetch();
+        $token = $db->query(
+            "SELECT * FROM remember_tokens 
+                            WHERE token = :token AND expires_at > NOW()",
+            [':token' => $_COOKIE['remember_token']]
+        )->fetch();
 
         if ($token) {
-            $user = $db->query("SELECT * FROM users WHERE id = :id", 
-                [':id' => $token['user_id']])->fetch();
+            $user = $db->query(
+                "SELECT * FROM users WHERE id = :id",
+                [':id' => $token['user_id']]
+            )->fetch();
 
             if ($user) {
                 $_SESSION['user'] = [
@@ -55,6 +59,7 @@ if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php')
 ?>
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -71,11 +76,20 @@ if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php')
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <style>
-        .navbar { margin-bottom: 20px; }
-        .table th { white-space: nowrap; }
-        .loading { display: none; }
+        .navbar {
+            margin-bottom: 20px;
+        }
+
+        .table th {
+            white-space: nowrap;
+        }
+
+        .loading {
+            display: none;
+        }
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
@@ -87,36 +101,41 @@ if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php')
                 <?php if (isset($_SESSION['user'])): ?>
                     <ul class="navbar-nav me-auto">
                         <?php if (isset($_SESSION['company_id'])): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="fatura_olustur.php">
-                                <i class="bi bi-plus-circle"></i> Yeni Fatura
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="fatura_listele.php">
-                                <i class="bi bi-list"></i> Faturalar
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="musteri_listele.php">
-                                <i class="bi bi-people"></i> Müşteriler
-                            </a>
-                        </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="fatura_olustur.php">
+                                    <i class="bi bi-plus-circle"></i> Yeni Fatura
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="fatura_listele.php">
+                                    <i class="bi bi-list"></i> Faturalar
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="musteri_listele.php">
+                                    <i class="bi bi-people"></i> Müşteriler
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="sirketler.php">
+                                    <i class="bi bi-building"></i> Şirketler
+                                </a>
+                            </li>
                         <?php endif; ?>
                         <?php if (isset($_SESSION['user']['admin']) && $_SESSION['user']['admin']): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="sirketler.php">
-                                <i class="bi bi-building"></i> Şirketler
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="admin.php">
-                                <i class="bi bi-gear"></i> Ayarlar
-                            </a>
-                        </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="sirketler.php">
+                                    <i class="bi bi-building"></i> Şirketler
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="admin.php">
+                                    <i class="bi bi-gear"></i> Ayarlar
+                                </a>
+                            </li>
                         <?php endif; ?>
                     </ul>
-                    
+
                     <ul class="navbar-nav">
                         <?php
                         // Kullanıcının şirketlerini veritabanından al
@@ -131,24 +150,24 @@ if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php')
 
                         if (!empty($sirketler)):
                         ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                <i class="bi bi-building"></i> 
-                                <?php echo isset($_SESSION['company_id']) ? $_SESSION['company_unvan'] : 'Şirket Seç'; ?>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <?php foreach ($sirketler as $sirket): ?>
-                                <li>
-                                    <a class="dropdown-item <?php echo isset($_SESSION['company_id']) && $_SESSION['company_id'] == $sirket['id'] ? 'active' : ''; ?>" 
-                                       href="sirket_sec.php?id=<?php echo $sirket['id']; ?>">
-                                        <?php echo $sirket['unvan']; ?>
-                                    </a>
-                                </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                    <i class="bi bi-building"></i>
+                                    <?php echo isset($_SESSION['company_id']) ? $_SESSION['company_unvan'] : 'Şirket Seç'; ?>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <?php foreach ($sirketler as $sirket): ?>
+                                        <li>
+                                            <a class="dropdown-item <?php echo isset($_SESSION['company_id']) && $_SESSION['company_id'] == $sirket['id'] ? 'active' : ''; ?>"
+                                                href="sirket_sec.php?id=<?php echo $sirket['id']; ?>">
+                                                <?php echo $sirket['unvan']; ?>
+                                            </a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </li>
                         <?php endif; ?>
-                        
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle"></i> <?php echo $_SESSION['user']['username']; ?>
@@ -172,4 +191,4 @@ if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php')
         </div>
     </nav>
     <div class="container">
-        <?php echo mesaj_goster(); ?> 
+        <?php echo mesaj_goster(); ?>
