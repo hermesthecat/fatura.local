@@ -1,21 +1,17 @@
 <?php
 require_once 'templates/header.php';
 
-// Yetki kontrolü
-if (!isset($_SESSION['admin'])) {
-    header('Location: index.php');
-    exit;
-}
-
 $db = Database::getInstance();
 
 // Şirket silme işlemi
 if (isset($_POST['sil']) && isset($_POST['id'])) {
     try {
         // Şirketin faturalarını kontrol et
-        $fatura_sayisi = $db->query("SELECT COUNT(*) FROM invoices WHERE company_id = :id", 
-            [':id' => $_POST['id']])->fetchColumn();
-            
+        $fatura_sayisi = $db->query(
+            "SELECT COUNT(*) FROM invoices WHERE company_id = :id",
+            [':id' => $_POST['id']]
+        )->fetchColumn();
+
         if ($fatura_sayisi > 0) {
             hata("Bu şirkete ait " . $fatura_sayisi . " adet fatura bulunduğu için silinemez!");
         } else {
@@ -72,40 +68,40 @@ $sirketler = $db->query("SELECT c.*, COUNT(DISTINCT i.id) as fatura_sayisi, COUN
                     </thead>
                     <tbody>
                         <?php foreach ($sirketler as $sirket): ?>
-                        <tr>
-                            <td><?php echo $sirket['unvan']; ?></td>
-                            <td><?php echo $sirket['vergi_no']; ?></td>
-                            <td><?php echo $sirket['telefon']; ?></td>
-                            <td><?php echo $sirket['email']; ?></td>
-                            <td><?php echo $sirket['fatura_sayisi']; ?></td>
-                            <td><?php echo $sirket['musteri_sayisi']; ?></td>
-                            <td><?php echo $sirket['kullanicilar']; ?></td>
-                            <td>
-                                <?php if ($sirket['aktif']): ?>
-                                    <span class="badge bg-success">Aktif</span>
-                                <?php else: ?>
-                                    <span class="badge bg-danger">Pasif</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <div class="btn-group">
-                                    <a href="sirket_duzenle.php?id=<?php echo $sirket['id']; ?>" 
-                                       class="btn btn-sm btn-primary" title="Düzenle">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <?php if ($sirket['fatura_sayisi'] == 0): ?>
-                                    <form method="post" class="d-inline" 
-                                          onsubmit="return confirm('Bu şirketi silmek istediğinize emin misiniz?');">
-                                        <?php echo csrf_token_field(); ?>
-                                        <input type="hidden" name="id" value="<?php echo $sirket['id']; ?>">
-                                        <button type="submit" name="sil" class="btn btn-sm btn-danger" title="Sil">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                            <tr>
+                                <td><?php echo $sirket['unvan']; ?></td>
+                                <td><?php echo $sirket['vergi_no']; ?></td>
+                                <td><?php echo $sirket['telefon']; ?></td>
+                                <td><?php echo $sirket['email']; ?></td>
+                                <td><?php echo $sirket['fatura_sayisi']; ?></td>
+                                <td><?php echo $sirket['musteri_sayisi']; ?></td>
+                                <td><?php echo $sirket['kullanicilar']; ?></td>
+                                <td>
+                                    <?php if ($sirket['aktif']): ?>
+                                        <span class="badge bg-success">Aktif</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-danger">Pasif</span>
                                     <?php endif; ?>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="sirket_duzenle.php?id=<?php echo $sirket['id']; ?>"
+                                            class="btn btn-sm btn-primary" title="Düzenle">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <?php if ($sirket['fatura_sayisi'] == 0): ?>
+                                            <form method="post" class="d-inline"
+                                                onsubmit="return confirm('Bu şirketi silmek istediğinize emin misiniz?');">
+                                                <?php echo csrf_token_field(); ?>
+                                                <input type="hidden" name="id" value="<?php echo $sirket['id']; ?>">
+                                                <button type="submit" name="sil" class="btn btn-sm btn-danger" title="Sil">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -114,4 +110,4 @@ $sirketler = $db->query("SELECT c.*, COUNT(DISTINCT i.id) as fatura_sayisi, COUN
     </div>
 </div>
 
-<?php require_once 'templates/footer.php'; ?> 
+<?php require_once 'templates/footer.php'; ?>

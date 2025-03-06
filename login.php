@@ -48,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'id' => $user['id'],
             'ad_soyad' => $user['ad_soyad'],
             'username' => $user['username'],
+            'email' => $user['email'],
             'admin' => $user['rol'] === 'admin'
         ];
 
@@ -65,11 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Token'ı veritabanına kaydet
             $db->query(
-                "INSERT INTO remember_tokens (user_id, token, expires) VALUES (:user_id, :token, :expires)",
+                "INSERT INTO remember_tokens (user_id, token, expires_at) VALUES (:user_id, :token, :expires_at)",
                 [
                     ':user_id' => $user['id'],
                     ':token' => $token,
-                    ':expires' => $expires
+                    ':expires_at' => $expires
                 ]
             );
 

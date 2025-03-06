@@ -1,12 +1,6 @@
 <?php
 require_once 'templates/header.php';
 
-// Yetki kontrolü
-if (!isset($_SESSION['admin'])) {
-    header('Location: index.php');
-    exit;
-}
-
 $db = Database::getInstance();
 
 // Form gönderildi mi?
