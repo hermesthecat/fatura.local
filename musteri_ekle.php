@@ -1,5 +1,17 @@
 <?php
-require_once 'templates/header.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once 'includes/config.php';
+require_once 'includes/db.php';
+require_once 'includes/functions.php';
+
+// Şirket seçili değilse ana sayfaya yönlendir
+if (!isset($_SESSION['company_id'])) {
+    hata("Lütfen önce bir şirket seçin!");
+    header('Location: index.php');
+    exit;
+}
 
 // Form gönderildi mi kontrol et
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -7,10 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $db = Database::getInstance();
             
-            $sql = "INSERT INTO customers (firma_adi, vergi_no, vergi_dairesi, adres, telefon, email) 
-                    VALUES (:firma_adi, :vergi_no, :vergi_dairesi, :adres, :telefon, :email)";
+            $sql = "INSERT INTO customers (company_id, firma_adi, vergi_no, vergi_dairesi, adres, telefon, email) 
+                    VALUES (:company_id, :firma_adi, :vergi_no, :vergi_dairesi, :adres, :telefon, :email)";
             
             $params = [
+                ':company_id' => $_SESSION['company_id'],
                 ':firma_adi' => $_POST['firma_adi'],
                 ':vergi_no' => $_POST['vergi_no'],
                 ':vergi_dairesi' => $_POST['vergi_dairesi'],
@@ -28,14 +41,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Header'ı en son dahil et
+require_once 'templates/header.php';
 ?>
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title">Yeni Müşteri Ekle</h3>
-        <a href="musteri_listele.php" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Geri
-        </a>
+        <div>
+            <span class="text-muted me-3">
+                <i class="bi bi-building"></i> <?php echo $_SESSION['company_unvan']; ?>
+            </span>
+            <a href="musteri_listele.php" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Geri
+            </a>
+        </div>
     </div>
     <div class="card-body">
         <form method="POST" action="">
@@ -75,7 +96,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="text-end">
-                <button type="submit" class="btn btn-primary">Müşteriyi Kaydet</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Müşteriyi Kaydet
+                </button>
             </div>
         </form>
     </div>

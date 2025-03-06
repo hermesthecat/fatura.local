@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once 'includes/config.php';
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
@@ -11,7 +13,7 @@ if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php')
         $db = Database::getInstance();
         $token = $db->query(
             "SELECT * FROM remember_tokens 
-                            WHERE token = :token AND expires_at > NOW()",
+            WHERE token = :token AND expires_at > NOW()",
             [':token' => $_COOKIE['remember_token']]
         )->fetch();
 

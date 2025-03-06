@@ -1,15 +1,35 @@
 <?php
-require_once 'templates/header.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once 'includes/config.php';
+require_once 'includes/db.php';
+require_once 'includes/functions.php';
+
+// Şirket seçili değilse ana sayfaya yönlendir
+if (!isset($_SESSION['company_id'])) {
+    hata("Lütfen önce bir şirket seçin!");
+    header('Location: index.php');
+    exit;
+}
 
 // Müşterileri al
 $db = Database::getInstance();
-$sql = "SELECT * FROM customers ORDER BY firma_adi";
-$musteriler = $db->query($sql)->fetchAll();
+$sql = "SELECT * FROM customers WHERE company_id = :company_id ORDER BY firma_adi";
+$musteriler = $db->query($sql, [':company_id' => $_SESSION['company_id']])->fetchAll();
+
+// Header'ı en son dahil et
+require_once 'templates/header.php';
 ?>
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="card-title">Müşteri Listesi</h3>
+        <div>
+            <h3 class="card-title mb-0">Müşteri Listesi</h3>
+            <small class="text-muted">
+                <i class="bi bi-building"></i> <?php echo $_SESSION['company_unvan']; ?>
+            </small>
+        </div>
         <a href="musteri_ekle.php" class="btn btn-primary">
             <i class="bi bi-plus"></i> Yeni Müşteri
         </a>
@@ -57,8 +77,11 @@ $musteriler = $db->query($sql)->fetchAll();
 
 <script>
 $(document).ready(function() {
-    // DataTables başlat
+    // DataTables Türkçe dil desteği
     $('#musteriTablosu').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+        },
         order: [[0, 'asc']], // Firma adına göre sırala
         columnDefs: [
             { orderable: false, targets: 5 } // İşlemler sütununu sıralamadan çıkar
