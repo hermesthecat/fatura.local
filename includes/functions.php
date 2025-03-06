@@ -51,6 +51,11 @@ function csrf_token_kontrol($token) {
     return true;
 }
 
+// CSRF token field oluşturma
+function csrf_token_field() {
+    return '<input type="hidden" name="csrf_token" value="' . csrf_token_olustur() . '">';
+}
+
 // Başarı mesajı
 function basari($mesaj) {
     $_SESSION['mesaj'] = [

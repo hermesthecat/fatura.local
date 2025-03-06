@@ -35,26 +35,15 @@ if (!$fatura) {
 $sql = "SELECT * FROM invoice_items WHERE invoice_id = :invoice_id ORDER BY id";
 $kalemler = $db->query($sql, [':invoice_id' => $fatura_id])->fetchAll();
 
-// Şirket bilgileri - Bu bilgileri config.php'ye taşıyabilirsiniz
-$sirket = [
-    'unvan' => 'A. KEREM GÖK',
-    'adres' => 'Şirket Adresi, Sokak No: 123',
-    'sehir' => '34000, İstanbul / Türkiye',
-    'telefon' => '+90 (212) 123 45 67',
-    'email' => 'info@keremgok.com',
-    'vergi_dairesi' => 'KADIKÖY',
-    'vergi_no' => '1234567890',
-    'web' => 'www.keremgok.com',
-    'mersis_no' => '0123456789000001',
-    'ticaret_sicil_no' => '123456-0'
-];
+// Şirket bilgilerini al
+$sirket = $db->query("SELECT * FROM company_settings WHERE id = 1")->fetch();
 
 // PDF oluştur
 class MYPDF extends TCPDF {
     public function Header() {
         // Logo
-        if (file_exists('assets/img/logo.png')) {
-            $this->Image('assets/img/logo.png', 15, 10, 50);
+        if (!empty($GLOBALS['sirket']['logo']) && file_exists($GLOBALS['sirket']['logo'])) {
+            $this->Image($GLOBALS['sirket']['logo'], 15, 10, 50);
         }
         
         // Şirket Bilgileri
@@ -206,8 +195,8 @@ $pdf->Ln(5);
 $pdf->SetFont('dejavusans', 'B', 9);
 $pdf->Cell(0, 6, 'Banka Hesap Bilgileri:', 0, 1, 'L');
 $pdf->SetFont('dejavusans', '', 8);
-$pdf->Cell(0, 5, 'Banka: X BANKASI', 0, 1, 'L');
-$pdf->Cell(0, 5, 'IBAN: TR00 0000 0000 0000 0000 0000 00', 0, 1, 'L');
+$pdf->Cell(0, 5, 'Banka: ' . $sirket['banka_adi'], 0, 1, 'L');
+$pdf->Cell(0, 5, 'IBAN: ' . $sirket['iban'], 0, 1, 'L');
 
 // PDF'i gönder
 $pdf->Output('Fatura_' . $fatura['fatura_no'] . '.pdf', 'I'); 

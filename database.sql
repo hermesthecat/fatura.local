@@ -42,7 +42,31 @@ CREATE TABLE IF NOT EXISTS invoice_items (
     FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Şirket Ayarları Tablosu
+CREATE TABLE IF NOT EXISTS `company_settings` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `unvan` varchar(255) NOT NULL,
+    `adres` text NOT NULL,
+    `sehir` varchar(255) NOT NULL,
+    `telefon` varchar(20) NOT NULL,
+    `email` varchar(255) NOT NULL,
+    `vergi_dairesi` varchar(255) NOT NULL,
+    `vergi_no` varchar(20) NOT NULL,
+    `web` varchar(255) NOT NULL,
+    `mersis_no` varchar(20) NOT NULL,
+    `ticaret_sicil_no` varchar(20) NOT NULL,
+    `banka_adi` varchar(255) NOT NULL,
+    `iban` varchar(50) NOT NULL,
+    `logo` varchar(255) DEFAULT NULL,
+    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Örnek müşteri verisi
 INSERT INTO customers (firma_adi, vergi_no, vergi_dairesi, adres, telefon, email) VALUES
 ('Örnek Firma A.Ş.', '1234567890', 'Ankara VD', 'Kızılay Mah. Atatürk Bulvarı No:123 Çankaya/Ankara', '0312 123 45 67', 'info@ornekfirma.com'),
-('Test Şirketi Ltd. Şti.', '9876543210', 'İstanbul VD', 'Levent Mah. Büyükdere Cad. No:456 Beşiktaş/İstanbul', '0212 987 65 43', 'info@testsirketi.com'); 
+('Test Şirketi Ltd. Şti.', '9876543210', 'İstanbul VD', 'Levent Mah. Büyükdere Cad. No:456 Beşiktaş/İstanbul', '0212 987 65 43', 'info@testsirketi.com');
+
+-- Varsayılan değerler
+INSERT INTO `company_settings` (`unvan`, `adres`, `sehir`, `telefon`, `email`, `vergi_dairesi`, `vergi_no`, `web`, `mersis_no`, `ticaret_sicil_no`, `banka_adi`, `iban`) 
+VALUES ('A. KEREM GÖK', 'Şirket Adresi, Sokak No: 123', '34000, İstanbul / Türkiye', '+90 (212) 123 45 67', 'info@keremgok.com', 'KADIKÖY', '1234567890', 'www.keremgok.com', '0123456789000001', '123456-0', 'X BANKASI', 'TR00 0000 0000 0000 0000 0000 00'); 
