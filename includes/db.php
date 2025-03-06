@@ -34,24 +34,6 @@ class Database
     public function query($sql, $params = [])
     {
         try {
-            // Debug bilgileri
-            echo "<pre>";
-            echo "Database->query() çağrıldı:\n";
-            echo "SQL: " . $sql . "\n";
-            echo "Params: "; print_r($params);
-            
-            // Parametreleri SQL'e yerleştirerek gerçek sorguyu göster
-            $debug_sql = $sql;
-            foreach ($params as $key => $value) {
-                if (is_numeric($value)) {
-                    $debug_sql = str_replace(is_int($key) ? '?' : $key, $value, $debug_sql);
-                } else {
-                    $debug_sql = str_replace(is_int($key) ? '?' : $key, $this->pdo->quote($value), $debug_sql);
-                }
-            }
-            echo "Gerçek SQL: " . $debug_sql . "\n";
-            echo "</pre>";
-
             $stmt = $this->pdo->prepare($sql);
             
             // Parametreleri bind et
@@ -67,17 +49,6 @@ class Database
             }
             
             $stmt->execute();
-            
-            // Sonuç setini debug et
-            if (stripos($sql, 'SELECT') === 0) {
-                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                echo "<pre>";
-                echo "Sorgu Sonucu: "; print_r($result);
-                echo "</pre>";
-                // Sonuç setini başa sar
-                $stmt->execute();
-            }
-            
             return $stmt;
         } catch (PDOException $e) {
             throw new Exception("Sorgu hatası: " . $e->getMessage());
