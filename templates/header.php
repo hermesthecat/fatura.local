@@ -118,18 +118,30 @@ if (!isset($_SESSION['user']) && basename($_SERVER['PHP_SELF']) !== 'login.php')
                     </ul>
                     
                     <ul class="navbar-nav">
-                        <?php if (isset($_SESSION['user_companies'])): ?>
+                        <?php
+                        // Kullanıcının şirketlerini veritabanından al
+                        $db = Database::getInstance();
+                        $sirketler = $db->query(
+                            "SELECT c.* FROM companies c 
+                            INNER JOIN user_companies uc ON uc.company_id = c.id 
+                            WHERE uc.user_id = :user_id AND c.aktif = 1 
+                            ORDER BY c.unvan",
+                            [':user_id' => $_SESSION['user']['id']]
+                        )->fetchAll();
+
+                        if (!empty($sirketler)):
+                        ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                                 <i class="bi bi-building"></i> 
                                 <?php echo isset($_SESSION['company_id']) ? $_SESSION['company_unvan'] : 'Şirket Seç'; ?>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <?php foreach ($_SESSION['user_companies'] as $company): ?>
+                                <?php foreach ($sirketler as $sirket): ?>
                                 <li>
-                                    <a class="dropdown-item <?php echo isset($_SESSION['company_id']) && $_SESSION['company_id'] == $company['id'] ? 'active' : ''; ?>" 
-                                       href="sirket_sec.php?id=<?php echo $company['id']; ?>">
-                                        <?php echo $company['unvan']; ?>
+                                    <a class="dropdown-item <?php echo isset($_SESSION['company_id']) && $_SESSION['company_id'] == $sirket['id'] ? 'active' : ''; ?>" 
+                                       href="sirket_sec.php?id=<?php echo $sirket['id']; ?>">
+                                        <?php echo $sirket['unvan']; ?>
                                     </a>
                                 </li>
                                 <?php endforeach; ?>

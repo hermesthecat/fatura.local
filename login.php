@@ -39,65 +39,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             [':username' => $username]
         )->fetch();
 
-        if (!$user || !password_verify($password, $user['password'])) {
-            throw new Exception('Kullanıcı adı veya şifre hatalı!');
+        if (password_verify($password, $user['password'])) {
+            // Kullanıcı bilgilerini session'a kaydet
+            $_SESSION['user'] = [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'ad_soyad' => $user['ad_soyad'],
+                'email' => $user['email'],
+                'admin' => $user['admin']
+            ];
+
+            // Son giriş tarihini güncelle
+            $db->query("UPDATE users SET son_giris = NOW() WHERE id = :id", [':id' => $user['id']]);
+
+            // Beni hatırla işaretliyse
+            if (isset($_POST['remember']) && $_POST['remember'] == 1) {
+                $token = bin2hex(random_bytes(32));
+                $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
+                
+                $db->query(
+                    "INSERT INTO remember_tokens (user_id, token, expires_at) VALUES (:user_id, :token, :expires)",
+                    [
+                        ':user_id' => $user['id'],
+                        ':token' => $token,
+                        ':expires' => $expires
+                    ]
+                );
+                
+                setcookie('remember_token', $token, strtotime('+30 days'), '/', '', true, true);
+            }
+
+            header('Location: index.php');
+            exit;
+        } else {
+            $error = "Kullanıcı adı veya şifre hatalı!";
         }
-
-        // Session'a kullanıcı bilgilerini kaydet
-        $_SESSION['user'] = [
-            'id' => $user['id'],
-            'ad_soyad' => $user['ad_soyad'],
-            'username' => $user['username'],
-            'email' => $user['email'],
-            'admin' => $user['rol'] === 'admin'
-        ];
-
-        // Kullanıcının şirketlerini al
-        $sirketler = $db->query(
-            "SELECT c.* FROM companies c 
-            INNER JOIN user_companies uc ON uc.company_id = c.id 
-            WHERE uc.user_id = :user_id AND c.aktif = 1 
-            ORDER BY c.unvan",
-            [':user_id' => $user['id']]
-        )->fetchAll();
-
-        // Şirketleri session'a kaydet
-        $_SESSION['user_companies'] = $sirketler;
-
-        // Varsayılan şirket seç (ilk şirket)
-        if (!empty($sirketler)) {
-            $_SESSION['company_id'] = $sirketler[0]['id'];
-            $_SESSION['company_unvan'] = $sirketler[0]['unvan'];
-        }
-
-        // Son giriş tarihini güncelle
-        $db->query(
-            "UPDATE users SET son_giris = NOW() WHERE id = :id",
-            [':id' => $user['id']]
-        );
-
-        // Beni hatırla
-        if ($remember) {
-            // Token oluştur
-            $token = bin2hex(random_bytes(32));
-            $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
-
-            // Token'ı veritabanına kaydet
-            $db->query(
-                "INSERT INTO remember_tokens (user_id, token, expires_at) VALUES (:user_id, :token, :expires_at)",
-                [
-                    ':user_id' => $user['id'],
-                    ':token' => $token,
-                    ':expires_at' => $expires
-                ]
-            );
-
-            // Cookie oluştur (30 gün)
-            setcookie('remember_token', $token, time() + (86400 * 30), '/', '', true, true);
-        }
-
-        header('Location: index.php');
-        exit;
     } catch (Exception $e) {
         $error = $e->getMessage();
     }
