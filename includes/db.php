@@ -17,6 +17,7 @@ class Database
             $this->pdo = new PDO($dsn, DB_USER, DB_PASS);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+            $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
         } catch (PDOException $e) {
             die("Veritabanı bağlantı hatası: " . $e->getMessage());
         }
@@ -38,10 +39,45 @@ class Database
             echo "Database->query() çağrıldı:\n";
             echo "SQL: " . $sql . "\n";
             echo "Params: "; print_r($params);
+            
+            // Parametreleri SQL'e yerleştirerek gerçek sorguyu göster
+            $debug_sql = $sql;
+            foreach ($params as $key => $value) {
+                if (is_numeric($value)) {
+                    $debug_sql = str_replace(is_int($key) ? '?' : $key, $value, $debug_sql);
+                } else {
+                    $debug_sql = str_replace(is_int($key) ? '?' : $key, $this->pdo->quote($value), $debug_sql);
+                }
+            }
+            echo "Gerçek SQL: " . $debug_sql . "\n";
             echo "</pre>";
 
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($params);
+            
+            // Parametreleri bind et
+            foreach ($params as $key => $value) {
+                $type = is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+                if (is_int($key)) {
+                    // Positional parameters (1-based)
+                    $stmt->bindValue($key + 1, $value, $type);
+                } else {
+                    // Named parameters
+                    $stmt->bindValue($key, $value, $type);
+                }
+            }
+            
+            $stmt->execute();
+            
+            // Sonuç setini debug et
+            if (stripos($sql, 'SELECT') === 0) {
+                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                echo "<pre>";
+                echo "Sorgu Sonucu: "; print_r($result);
+                echo "</pre>";
+                // Sonuç setini başa sar
+                $stmt->execute();
+            }
+            
             return $stmt;
         } catch (PDOException $e) {
             throw new Exception("Sorgu hatası: " . $e->getMessage());
