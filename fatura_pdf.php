@@ -160,9 +160,6 @@ $pdf->Ln(5);
 // Fatura kalemleri tablosu
 $pdf->SetFont('dejavusans', 'B', 9);
 
-// Sayfa genişliği: 180mm (A4 - kenar boşlukları)
-$page_width = 180;
-
 // Sütun genişlikleri
 $w = array(
     15,     // Sıra
@@ -173,6 +170,10 @@ $w = array(
     15,     // KDV(%)
     25      // Toplam
 );
+
+// Toplam genişliği hesapla
+$total_width = array_sum($w);
+$start_x = $pdf->GetX();
 
 $header = array('Sıra', 'Mal/Hizmet', 'Miktar', 'Birim', 'Birim Fiyat', 'KDV(%)', 'Toplam');
 
@@ -211,23 +212,19 @@ $pdf->SetFont('dejavusans', 'B', 9);
 
 // YAZI İLE kısmı
 $yazi_ile = 'YAZI İLE: ' . sayiyiYaziyaCevir($fatura['genel_toplam']) . ' ' . $fatura['para_birimi_kod'];
-$pdf->Cell($w[0] + $w[1] + $w[2] + $w[3], 6, $yazi_ile, 0, 0, 'L');
+$pdf->Cell($w[0] + $w[1] + $w[2], 6, $yazi_ile, 0, 1, 'L');
 
 // Toplamlar sağda
-$toplam_width = $w[4] + $w[5] + $w[6];
-$pdf->SetX($page_width - $toplam_width);
-
-$pdf->Cell($w[4] + $w[5], 6, 'ARA TOPLAM:', 0, 0, 'R');
+$pdf->SetX($start_x + $total_width - ($w[5] + $w[6]));
+$pdf->Cell($w[5], 6, 'ARA TOPLAM:', 0, 0, 'R');
 $pdf->Cell($w[6], 6, formatPara($fatura['toplam_tutar']) . ' ' . $fatura['para_birimi_sembol'], 1, 1, 'R');
 
-$pdf->Cell($w[0] + $w[1] + $w[2] + $w[3], 6, '', 0, 0, 'L');
-$pdf->SetX($page_width - $toplam_width);
-$pdf->Cell($w[4] + $w[5], 6, 'KDV TOPLAM:', 0, 0, 'R');
+$pdf->SetX($start_x + $total_width - ($w[5] + $w[6]));
+$pdf->Cell($w[5], 6, 'KDV TOPLAM:', 0, 0, 'R');
 $pdf->Cell($w[6], 6, formatPara($fatura['kdv_tutari']) . ' ' . $fatura['para_birimi_sembol'], 1, 1, 'R');
 
-$pdf->Cell($w[0] + $w[1] + $w[2] + $w[3], 6, '', 0, 0, 'L');
-$pdf->SetX($page_width - $toplam_width);
-$pdf->Cell($w[4] + $w[5], 6, 'GENEL TOPLAM:', 0, 0, 'R');
+$pdf->SetX($start_x + $total_width - ($w[5] + $w[6]));
+$pdf->Cell($w[5], 6, 'GENEL TOPLAM:', 0, 0, 'R');
 $pdf->Cell($w[6], 6, formatPara($fatura['genel_toplam']) . ' ' . $fatura['para_birimi_sembol'], 1, 1, 'R');
 
 // Açıklama ve Notlar
