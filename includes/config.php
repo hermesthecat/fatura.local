@@ -8,21 +8,6 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Veritabanından ayarları al
-require_once 'db.php';
-$db = Database::getInstance();
-$ayarlar = $db->query("SELECT * FROM system_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
-
-// Sistem ayarlarını tanımla
-foreach ($ayarlar as $ayar_adi => $ayar_degeri) {
-    define(strtoupper($ayar_adi), $ayar_degeri);
-}
-
-// Varsayılan değerler (veritabanında yoksa)
-if (!defined('FATURA_PREFIX')) define('FATURA_PREFIX', 'INV');
-if (!defined('PARA_BIRIMI')) define('PARA_BIRIMI', '₺');
-if (!defined('VARSAYILAN_KDV')) define('VARSAYILAN_KDV', 18);
-
 // Veritabanı bağlantı bilgileri
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'fatura_db');
@@ -36,11 +21,19 @@ date_default_timezone_set('Europe/Istanbul');
 // Site URL
 define('SITE_URL', 'http://fatura.local');
 
-// Fatura numarası prefix
-define('FATURA_PREFIX', 'INV');
+// Veritabanından ayarları al
+require_once 'db.php';
+$db = Database::getInstance();
+$ayarlar = $db->query("SELECT ayar_adi, ayar_degeri FROM system_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
 
-// Para birimi
-define('PARA_BIRIMI', '₺');
+// Sistem ayarlarını tanımla
+foreach ($ayarlar as $ayar_adi => $ayar_degeri) {
+    if (!defined(strtoupper($ayar_adi))) {
+        define(strtoupper($ayar_adi), $ayar_degeri);
+    }
+}
 
-// Varsayılan KDV oranı
-define('VARSAYILAN_KDV', 18); 
+// Varsayılan değerler (veritabanında yoksa)
+if (!defined('FATURA_PREFIX')) define('FATURA_PREFIX', 'INV');
+if (!defined('PARA_BIRIMI')) define('PARA_BIRIMI', '₺');
+if (!defined('VARSAYILAN_KDV')) define('VARSAYILAN_KDV', 18); 
