@@ -1,102 +1,110 @@
 <?php
 require_once 'templates/header.php';
 
-// Faturaları al
+// Oturum ve şirket kontrolü
+if (!isset($_SESSION['user'])) {
+    header('Location: login.php');
+    exit;
+}
+
+if (!isset($_SESSION['company_id'])) {
+    hata("Lütfen önce bir şirket seçin!");
+    header('Location: index.php');
+    exit;
+}
+
 $db = Database::getInstance();
-$sql = "SELECT i.*, c.firma_adi, c.vergi_no 
-        FROM invoices i 
-        LEFT JOIN customers c ON i.customer_id = c.id 
-        ORDER BY i.created_at DESC";
-$faturalar = $db->query($sql)->fetchAll();
+
+// Faturaları listele
+$faturalar = $db->query("SELECT f.*, c.firma_adi as musteri_adi 
+    FROM invoices f 
+    INNER JOIN customers c ON c.id = f.customer_id 
+    WHERE f.company_id = :company_id 
+    ORDER BY f.fatura_tarihi DESC", 
+    [':company_id' => $_SESSION['company_id']])->fetchAll();
 ?>
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="card-title">Fatura Listesi</h3>
-        <a href="fatura_olustur.php" class="btn btn-primary">
-            <i class="bi bi-plus"></i> Yeni Fatura
-        </a>
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">Faturalar</h1>
+        </div>
+        <div class="col text-end">
+            <a href="fatura_olustur.php" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Yeni Fatura
+            </a>
+        </div>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover" id="faturaTablosu">
-                <thead>
-                    <tr>
-                        <th>Fatura No</th>
-                        <th>Müşteri</th>
-                        <th>Fatura Tarihi</th>
-                        <th>Vade Tarihi</th>
-                        <th>Toplam Tutar</th>
-                        <th>KDV</th>
-                        <th>Genel Toplam</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($faturalar as $fatura): ?>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="faturaTablosu">
+                    <thead>
                         <tr>
-                            <td><?php echo guvenlik($fatura['fatura_no']); ?></td>
+                            <th>Fatura No</th>
+                            <th>Müşteri</th>
+                            <th>Fatura Tarihi</th>
+                            <th>Vade Tarihi</th>
+                            <th class="text-end">Toplam</th>
+                            <th class="text-end">KDV</th>
+                            <th class="text-end">Genel Toplam</th>
+                            <th style="width: 100px;">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($faturalar as $fatura): ?>
+                        <tr>
+                            <td><?php echo $fatura['fatura_no']; ?></td>
+                            <td><?php echo $fatura['musteri_adi']; ?></td>
+                            <td><?php echo date('d.m.Y', strtotime($fatura['fatura_tarihi'])); ?></td>
                             <td>
-                                <?php echo guvenlik($fatura['firma_adi']); ?><br>
-                                <small class="text-muted">VN: <?php echo guvenlik($fatura['vergi_no']); ?></small>
+                                <?php if ($fatura['vade_tarihi']): ?>
+                                    <?php echo date('d.m.Y', strtotime($fatura['vade_tarihi'])); ?>
+                                <?php endif; ?>
                             </td>
-                            <td><?php echo formatTarih($fatura['fatura_tarihi']); ?></td>
-                            <td><?php echo $fatura['vade_tarihi'] ? formatTarih($fatura['vade_tarihi']) : '-'; ?></td>
-                            <td class="text-end"><?php echo formatPara($fatura['toplam_tutar']); ?></td>
-                            <td class="text-end"><?php echo formatPara($fatura['kdv_tutari']); ?></td>
-                            <td class="text-end"><?php echo formatPara($fatura['genel_toplam']); ?></td>
+                            <td class="text-end">
+                                <?php echo number_format($fatura['toplam_tutar'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                            </td>
+                            <td class="text-end">
+                                <?php echo number_format($fatura['kdv_tutari'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                            </td>
+                            <td class="text-end">
+                                <?php echo number_format($fatura['genel_toplam'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                            </td>
                             <td>
-                                <div class="btn-group btn-group-sm">
+                                <div class="btn-group">
                                     <a href="fatura_goruntule.php?id=<?php echo $fatura['id']; ?>" 
-                                       class="btn btn-info" title="Görüntüle">
+                                       class="btn btn-sm btn-info" title="Görüntüle">
                                         <i class="bi bi-eye"></i>
                                     </a>
+                                    <a href="fatura_pdf.php?id=<?php echo $fatura['id']; ?>" 
+                                       class="btn btn-sm btn-secondary" title="PDF" target="_blank">
+                                        <i class="bi bi-file-pdf"></i>
+                                    </a>
                                     <a href="fatura_duzenle.php?id=<?php echo $fatura['id']; ?>" 
-                                       class="btn btn-warning" title="Düzenle">
+                                       class="btn btn-sm btn-primary" title="Düzenle">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <button type="button" class="btn btn-danger fatura-sil" 
-                                            data-id="<?php echo $fatura['id']; ?>" title="Sil">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
                                 </div>
                             </td>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
 $(document).ready(function() {
-    // DataTables başlat
     $('#faturaTablosu').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+        },
         order: [[2, 'desc']], // Fatura tarihine göre sırala
-        columnDefs: [
-            { orderable: false, targets: 7 } // İşlemler sütununu sıralamadan çıkar
-        ]
-    });
-
-    // Fatura silme işlemi
-    $('.fatura-sil').click(function() {
-        var faturaId = $(this).data('id');
-        
-        Swal.fire({
-            title: 'Emin misiniz?',
-            text: "Bu fatura kalıcı olarak silinecek!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Evet, sil!',
-            cancelButtonText: 'İptal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = 'fatura_sil.php?id=' + faturaId;
-            }
-        });
+        pageLength: 25
     });
 });
 </script>

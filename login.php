@@ -1,75 +1,82 @@
 <?php
+/**
+ * Giriş Sayfası
+ * @author A. Kerem Gök
+ */
+
 require_once 'includes/config.php';
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
 
-// Zaten giriş yapmışsa ana sayfaya yönlendir
+// Oturum kontrolü
 if (isset($_SESSION['user'])) {
     header('Location: index.php');
     exit;
 }
 
+$db = Database::getInstance();
+
 // Form gönderildi mi?
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
-    $hatirla = isset($_POST['hatirla']);
-
     try {
+        // CSRF kontrolü
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            throw new Exception('Geçersiz form gönderimi!');
+        }
+
+        // Kullanıcı bilgilerini al
+        $email = $_POST['email'];
+        $password = $_POST['password'];
+        $remember = isset($_POST['remember']);
+
         // Kullanıcıyı kontrol et
-        $db = Database::getInstance();
-        $user = $db->query("SELECT * FROM users WHERE username = :username", 
-            [':username' => $username])->fetch();
+        $user = $db->query("SELECT * FROM users WHERE email = :email AND aktif = 1",
+            [':email' => $email])->fetch();
 
         if (!$user || !password_verify($password, $user['password'])) {
-            throw new Exception('Kullanıcı adı veya şifre hatalı!');
+            throw new Exception('E-posta veya şifre hatalı!');
         }
 
-        // Oturum bilgilerini kaydet
-        $_SESSION['user'] = true;
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_name'] = $user['ad_soyad'];
-        
-        if ($user['rol'] === 'admin') {
-            $_SESSION['admin'] = true;
-        }
-        
-        // Kullanıcının şirketlerini al
-        $sirketler = $db->query("SELECT c.* FROM companies c 
-            INNER JOIN user_companies uc ON uc.company_id = c.id 
-            WHERE uc.user_id = :user_id AND c.aktif = 1 
-            ORDER BY c.unvan", 
-            [':user_id' => $user['id']])->fetchAll();
-        
-        if (!empty($sirketler)) {
-            $_SESSION['user_companies'] = $sirketler;
-            $_SESSION['company_id'] = $sirketler[0]['id'];
-            $_SESSION['company_unvan'] = $sirketler[0]['unvan'];
-        }
-        
+        // Session'a kullanıcı bilgilerini kaydet
+        $_SESSION['user'] = [
+            'id' => $user['id'],
+            'ad_soyad' => $user['ad_soyad'],
+            'email' => $user['email'],
+            'admin' => $user['rol'] === 'admin'
+        ];
+
         // Son giriş tarihini güncelle
-        $db->query("UPDATE users SET son_giris = NOW() WHERE id = :id", 
+        $db->query("UPDATE users SET son_giris = NOW() WHERE id = :id",
             [':id' => $user['id']]);
-        
+
         // Beni hatırla
-        if (isset($_POST['remember'])) {
+        if ($remember) {
+            // Token oluştur
             $token = bin2hex(random_bytes(32));
             $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
-            
-            $db->query("INSERT INTO remember_tokens (user_id, token, expires_at) 
-                VALUES (:user_id, :token, :expires_at)",
-                [':user_id' => $user['id'], ':token' => $token, ':expires_at' => $expires]);
-            
-            setcookie('remember_token', $token, strtotime('+30 days'), '/', '', true, true);
+
+            // Token'ı veritabanına kaydet
+            $db->query("INSERT INTO remember_tokens (user_id, token, expires) VALUES (:user_id, :token, :expires)",
+                [
+                    ':user_id' => $user['id'],
+                    ':token' => $token,
+                    ':expires' => $expires
+                ]);
+
+            // Cookie oluştur (30 gün)
+            setcookie('remember_token', $token, time() + (86400 * 30), '/', '', true, true);
         }
-        
-        // Başarılı mesajı göster ve yönlendir
-        basari("Hoş geldiniz, " . $user['ad_soyad']);
+
         header('Location: index.php');
         exit;
     } catch (Exception $e) {
-        hata($e->getMessage());
+        $error = $e->getMessage();
     }
+}
+
+// CSRF token oluştur
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
 // Sayfa başlığı
@@ -82,9 +89,9 @@ $sayfa_baslik = "Giriş Yap";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $sayfa_baslik; ?> - Fatura Yönetim Sistemi</title>
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #f8f9fa;
@@ -130,13 +137,19 @@ $sayfa_baslik = "Giriş Yap";
                 <h5 class="card-title mb-0">Giriş Yap</h5>
             </div>
             <div class="card-body">
-                <form method="post" autocomplete="off">
-                    <?php echo csrf_token_field(); ?>
+                <?php if (isset($error)): ?>
+                <div class="alert alert-danger">
+                    <?php echo $error; ?>
+                </div>
+                <?php endif; ?>
+
+                <form method="post">
+                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                     
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="username" name="username" 
-                               placeholder="Kullanıcı Adı" required>
-                        <label for="username">Kullanıcı Adı</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               placeholder="E-posta" required autofocus>
+                        <label for="email">E-posta</label>
                     </div>
 
                     <div class="form-floating">
@@ -146,8 +159,8 @@ $sayfa_baslik = "Giriş Yap";
                     </div>
 
                     <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" id="hatirla" name="hatirla">
-                        <label class="form-check-label" for="hatirla">Beni Hatırla</label>
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">Beni Hatırla</label>
                     </div>
 
                     <button type="submit" class="btn btn-primary">
@@ -159,6 +172,6 @@ $sayfa_baslik = "Giriş Yap";
     </div>
 
     <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 

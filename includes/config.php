@@ -27,23 +27,33 @@ $db = Database::getInstance();
 
 // Aktif şirket kontrolü
 if (isset($_SESSION['company_id'])) {
-    // Şirket ayarlarını al
-    $stmt = $db->query("SELECT ayar_adi, ayar_degeri FROM company_settings WHERE company_id = :company_id", 
-        [':company_id' => $_SESSION['company_id']]);
-    $company_settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-    
     // Şirket bilgilerini al
     $stmt = $db->query("SELECT * FROM companies WHERE id = :id", 
         [':id' => $_SESSION['company_id']]);
     $company = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($company) {
-        foreach ($company as $key => $value) {
-            if (!defined('COMPANY_' . strtoupper($key))) {
-                define('COMPANY_' . strtoupper($key), $value);
-            }
-        }
+        // Şirket bilgilerini sabitlere tanımla
+        define('COMPANY_ID', $company['id']);
+        define('COMPANY_UNVAN', $company['unvan']);
+        define('COMPANY_ADRES', $company['adres']);
+        define('COMPANY_SEHIR', $company['sehir']);
+        define('COMPANY_TELEFON', $company['telefon']);
+        define('COMPANY_EMAIL', $company['email']);
+        define('COMPANY_VERGI_DAIRESI', $company['vergi_dairesi']);
+        define('COMPANY_VERGI_NO', $company['vergi_no']);
+        define('COMPANY_WEB', $company['web']);
+        define('COMPANY_MERSIS_NO', $company['mersis_no']);
+        define('COMPANY_TICARET_SICIL_NO', $company['ticaret_sicil_no']);
+        define('COMPANY_BANKA_ADI', $company['banka_adi']);
+        define('COMPANY_IBAN', $company['iban']);
+        define('COMPANY_LOGO', $company['logo']);
     }
+    
+    // Şirket ayarlarını al
+    $stmt = $db->query("SELECT ayar_adi, ayar_degeri FROM company_settings WHERE company_id = :company_id", 
+        [':company_id' => $_SESSION['company_id']]);
+    $company_settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
     
     // Şirket özel ayarlarını tanımla
     foreach ($company_settings as $ayar_adi => $ayar_degeri) {
@@ -66,4 +76,5 @@ foreach ($system_settings as $ayar_adi => $ayar_degeri) {
 // Varsayılan değerler (hiçbir ayar bulunamazsa)
 if (!defined('FATURA_PREFIX')) define('FATURA_PREFIX', 'INV');
 if (!defined('PARA_BIRIMI')) define('PARA_BIRIMI', '₺');
-if (!defined('VARSAYILAN_KDV')) define('VARSAYILAN_KDV', 18); 
+if (!defined('VARSAYILAN_KDV')) define('VARSAYILAN_KDV', 18);
+if (!defined('FATURA_NOT')) define('FATURA_NOT', 'Bu bir fatura notudur.'); 
