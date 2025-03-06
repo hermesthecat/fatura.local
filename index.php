@@ -139,7 +139,7 @@ if (!isset($_SESSION['company_id'])) {
                                 <i class="bi bi-list me-2"></i> Faturaları Listele
                             </a>
                             <a href="fatura_olustur.php" class="btn btn-success flex-grow-1 d-flex align-items-center justify-content-center">
-                                <i class="bi bi-plus-circle me-2"></i> Yeni Fatura
+                                <i class="bi bi-plus-circle me-2"></i> Fatura Oluştur
                             </a>
                         </div>
                     </div>
@@ -199,7 +199,7 @@ if (!isset($_SESSION['company_id'])) {
                                 <i class="bi bi-people me-2"></i> Müşteriler
                             </a>
                             <a href="musteri_ekle.php" class="btn btn-outline-success d-flex align-items-center">
-                                <i class="bi bi-person-plus me-2"></i> Yeni Müşteri
+                                <i class="bi bi-person-plus me-2"></i> Müşteri Ekle
                             </a>
                             <?php if ($_SESSION['user']['rol'] == 'admin'): ?>
                                 <a href="admin.php" class="btn btn-outline-dark d-flex align-items-center">

@@ -32,4 +32,4 @@ try {
 }
 
 header("Location: musteri_listele.php");
-exit; 
+exit;

@@ -18,10 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['csrf_token']) && csrf_token_kontrol($_POST['csrf_token'])) {
         try {
             $db = Database::getInstance();
-            
+
             $sql = "INSERT INTO customers (company_id, firma_adi, vergi_no, vergi_dairesi, adres, telefon, email) 
                     VALUES (:company_id, :firma_adi, :vergi_no, :vergi_dairesi, :adres, :telefon, :email)";
-            
+
             $params = [
                 ':company_id' => $_SESSION['company_id'],
                 ':firma_adi' => $_POST['firma_adi'],
@@ -61,7 +61,7 @@ require_once 'templates/header.php';
     <div class="card-body">
         <form method="POST" action="">
             <input type="hidden" name="csrf_token" value="<?php echo csrf_token_olustur(); ?>">
-            
+
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="firma_adi" class="form-label">Firma Adı</label>
@@ -104,4 +104,4 @@ require_once 'templates/header.php';
     </div>
 </div>
 
-<?php require_once 'templates/footer.php'; ?> 
+<?php require_once 'templates/footer.php'; ?>

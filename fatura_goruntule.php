@@ -22,7 +22,8 @@ if (!isset($_GET['id'])) {
 $db = Database::getInstance();
 
 // Fatura bilgilerini al
-$fatura = $db->query("SELECT 
+$fatura = $db->query(
+    "SELECT 
     f.id,
     f.fatura_no,
     f.fatura_tarihi,
@@ -43,7 +44,8 @@ $fatura = $db->query("SELECT
     INNER JOIN currencies cur ON cur.id = f.currency_id 
     WHERE f.id = :id AND f.company_id = :company_id 
     LIMIT 1",
-    [':id' => $_GET['id'], ':company_id' => $_SESSION['company_id']])->fetch();
+    [':id' => $_GET['id'], ':company_id' => $_SESSION['company_id']]
+)->fetch();
 
 if (!$fatura) {
     header('Location: fatura_listele.php');
@@ -51,8 +53,10 @@ if (!$fatura) {
 }
 
 // Fatura kalemlerini al
-$kalemler = $db->query("SELECT * FROM invoice_items WHERE invoice_id = :invoice_id",
-    [':invoice_id' => $fatura['id']])->fetchAll();
+$kalemler = $db->query(
+    "SELECT * FROM invoice_items WHERE invoice_id = :invoice_id",
+    [':invoice_id' => $fatura['id']]
+)->fetchAll();
 ?>
 
 <div class="container-fluid">
@@ -141,16 +145,16 @@ $kalemler = $db->query("SELECT * FROM invoice_items WHERE invoice_id = :invoice_
                             </thead>
                             <tbody>
                                 <?php foreach ($kalemler as $kalem): ?>
-                                <tr>
-                                    <td><?php echo $kalem['urun_adi']; ?></td>
-                                    <td class="text-end"><?php echo $kalem['miktar']; ?></td>
-                                    <td class="text-end">
-                                        <?php echo formatPara($kalem['birim_fiyat'], $fatura['para_birimi_sembol']); ?>
-                                    </td>
-                                    <td class="text-end">
-                                        <?php echo formatPara($kalem['toplam_fiyat'], $fatura['para_birimi_sembol']); ?>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td><?php echo $kalem['urun_adi']; ?></td>
+                                        <td class="text-end"><?php echo $kalem['miktar']; ?></td>
+                                        <td class="text-end">
+                                            <?php echo formatPara($kalem['birim_fiyat'], $fatura['para_birimi_sembol']); ?>
+                                        </td>
+                                        <td class="text-end">
+                                            <?php echo formatPara($kalem['toplam_fiyat'], $fatura['para_birimi_sembol']); ?>
+                                        </td>
+                                    </tr>
                                 <?php endforeach; ?>
                             </tbody>
                             <tfoot>
@@ -179,10 +183,10 @@ $kalemler = $db->query("SELECT * FROM invoice_items WHERE invoice_id = :invoice_
                     </div>
 
                     <?php if ($fatura['aciklama']): ?>
-                    <div class="mt-3">
-                        <h5 class="card-title">Açıklama</h5>
-                        <p class="card-text"><?php echo nl2br($fatura['aciklama']); ?></p>
-                    </div>
+                        <div class="mt-3">
+                            <h5 class="card-title">Açıklama</h5>
+                            <p class="card-text"><?php echo nl2br($fatura['aciklama']); ?></p>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -228,4 +232,4 @@ $kalemler = $db->query("SELECT * FROM invoice_items WHERE invoice_id = :invoice_
     </div>
 </div>
 
-<?php require_once 'templates/footer.php'; ?> 
+<?php require_once 'templates/footer.php'; ?>

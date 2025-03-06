@@ -30,4 +30,4 @@ try {
 }
 
 header("Location: fatura_listele.php");
-exit; 
+exit;

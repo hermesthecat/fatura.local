@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     telefon = :telefon,
                     email = :email
                     WHERE id = :id";
-            
+
             $params = [
                 ':id' => $musteri_id,
                 ':firma_adi' => $_POST['firma_adi'],
@@ -73,22 +73,22 @@ require_once 'templates/header.php';
     <div class="card-body">
         <form method="POST" action="">
             <input type="hidden" name="csrf_token" value="<?php echo csrf_token_olustur(); ?>">
-            
+
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="firma_adi" class="form-label">Firma Adı</label>
-                    <input type="text" name="firma_adi" id="firma_adi" class="form-control" 
-                           value="<?php echo guvenlik($musteri['firma_adi']); ?>" required>
+                    <input type="text" name="firma_adi" id="firma_adi" class="form-control"
+                        value="<?php echo guvenlik($musteri['firma_adi']); ?>" required>
                 </div>
                 <div class="col-md-3">
                     <label for="vergi_no" class="form-label">Vergi No</label>
-                    <input type="text" name="vergi_no" id="vergi_no" class="form-control" 
-                           value="<?php echo guvenlik($musteri['vergi_no']); ?>">
+                    <input type="text" name="vergi_no" id="vergi_no" class="form-control"
+                        value="<?php echo guvenlik($musteri['vergi_no']); ?>">
                 </div>
                 <div class="col-md-3">
                     <label for="vergi_dairesi" class="form-label">Vergi Dairesi</label>
-                    <input type="text" name="vergi_dairesi" id="vergi_dairesi" class="form-control" 
-                           value="<?php echo guvenlik($musteri['vergi_dairesi']); ?>">
+                    <input type="text" name="vergi_dairesi" id="vergi_dairesi" class="form-control"
+                        value="<?php echo guvenlik($musteri['vergi_dairesi']); ?>">
                 </div>
             </div>
 
@@ -102,13 +102,13 @@ require_once 'templates/header.php';
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="telefon" class="form-label">Telefon</label>
-                    <input type="tel" name="telefon" id="telefon" class="form-control" 
-                           value="<?php echo guvenlik($musteri['telefon']); ?>">
+                    <input type="tel" name="telefon" id="telefon" class="form-control"
+                        value="<?php echo guvenlik($musteri['telefon']); ?>">
                 </div>
                 <div class="col-md-6">
                     <label for="email" class="form-label">E-posta</label>
-                    <input type="email" name="email" id="email" class="form-control" 
-                           value="<?php echo guvenlik($musteri['email']); ?>">
+                    <input type="email" name="email" id="email" class="form-control"
+                        value="<?php echo guvenlik($musteri['email']); ?>">
                 </div>
             </div>
 
@@ -119,4 +119,4 @@ require_once 'templates/header.php';
     </div>
 </div>
 
-<?php require_once 'templates/footer.php'; ?> 
+<?php require_once 'templates/footer.php'; ?>

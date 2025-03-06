@@ -24,8 +24,12 @@ define('DB_CHARSET', 'utf8mb4');
 // Zaman dilimi ayarı
 date_default_timezone_set('Europe/Istanbul');
 
+// Create dynamic domain URL with HTTP/HTTPS check
+// Dinamik domain URL'si oluştur (HTTP/HTTPS kontrolü ile)
+$domain = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+
 // Site URL
-define('SITE_URL', 'http://fatura.local');
+define('SITE_URL', $domain);
 
 // Veritabanı bağlantısı
 require_once 'db.php';

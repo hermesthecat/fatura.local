@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     genel_toplam = :genel_toplam,
                     aciklama = :aciklama
                     WHERE id = :id AND company_id = :company_id";
-            
+
             $params = [
                 ':id' => $fatura_id,
                 ':company_id' => $_SESSION['company_id'],
@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!empty($urun_adi)) {
                     $sql = "INSERT INTO invoice_items (invoice_id, urun_adi, miktar, birim_fiyat, toplam_fiyat) 
                             VALUES (:invoice_id, :urun_adi, :miktar, :birim_fiyat, :toplam_fiyat)";
-                    
+
                     $params = [
                         ':invoice_id' => $fatura_id,
                         ':urun_adi' => $urun_adi,
@@ -134,16 +134,16 @@ require_once 'templates/header.php';
     <div class="card-body">
         <form id="faturaForm" method="POST" action="">
             <input type="hidden" name="csrf_token" value="<?php echo csrf_token_olustur(); ?>">
-            
+
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="customer_id" class="form-label">Müşteri</label>
                     <select name="customer_id" id="customer_id" class="form-select" required>
                         <option value="">Müşteri Seçin</option>
                         <?php foreach ($musteriler as $musteri): ?>
-                            <option value="<?php echo $musteri['id']; ?>" 
-                                    <?php echo $musteri['id'] == $fatura['customer_id'] ? 'selected' : ''; ?>>
-                                <?php echo guvenlik($musteri['firma_adi']); ?> - 
+                            <option value="<?php echo $musteri['id']; ?>"
+                                <?php echo $musteri['id'] == $fatura['customer_id'] ? 'selected' : ''; ?>>
+                                <?php echo guvenlik($musteri['firma_adi']); ?> -
                                 <?php echo guvenlik($musteri['vergi_no']); ?>
                             </option>
                         <?php endforeach; ?>
@@ -153,9 +153,9 @@ require_once 'templates/header.php';
                     <label for="currency_id" class="form-label">Para Birimi</label>
                     <select name="currency_id" id="currency_id" class="form-select" required>
                         <?php foreach ($para_birimleri as $para_birimi): ?>
-                            <option value="<?php echo $para_birimi['id']; ?>" 
-                                    data-symbol="<?php echo $para_birimi['sembol']; ?>"
-                                    <?php echo $para_birimi['id'] == $fatura['currency_id'] ? 'selected' : ''; ?>>
+                            <option value="<?php echo $para_birimi['id']; ?>"
+                                data-symbol="<?php echo $para_birimi['sembol']; ?>"
+                                <?php echo $para_birimi['id'] == $fatura['currency_id'] ? 'selected' : ''; ?>>
                                 <?php echo $para_birimi['kod']; ?>
                             </option>
                         <?php endforeach; ?>
@@ -163,13 +163,13 @@ require_once 'templates/header.php';
                 </div>
                 <div class="col-md-2">
                     <label for="fatura_tarihi" class="form-label">Fatura Tarihi</label>
-                    <input type="date" name="fatura_tarihi" id="fatura_tarihi" class="form-control" 
-                           value="<?php echo $fatura['fatura_tarihi']; ?>" required>
+                    <input type="date" name="fatura_tarihi" id="fatura_tarihi" class="form-control"
+                        value="<?php echo $fatura['fatura_tarihi']; ?>" required>
                 </div>
                 <div class="col-md-2">
                     <label for="vade_tarihi" class="form-label">Vade Tarihi</label>
-                    <input type="date" name="vade_tarihi" id="vade_tarihi" class="form-control" 
-                           value="<?php echo $fatura['vade_tarihi']; ?>">
+                    <input type="date" name="vade_tarihi" id="vade_tarihi" class="form-control"
+                        value="<?php echo $fatura['vade_tarihi']; ?>">
                 </div>
             </div>
 
@@ -188,20 +188,20 @@ require_once 'templates/header.php';
                         <?php foreach ($kalemler as $kalem): ?>
                             <tr>
                                 <td>
-                                    <input type="text" name="urun_adi[]" class="form-control" 
-                                           value="<?php echo guvenlik($kalem['urun_adi']); ?>" required>
+                                    <input type="text" name="urun_adi[]" class="form-control"
+                                        value="<?php echo guvenlik($kalem['urun_adi']); ?>" required>
                                 </td>
                                 <td>
-                                    <input type="number" name="miktar[]" class="form-control miktar" 
-                                           value="<?php echo $kalem['miktar']; ?>" min="1" required>
+                                    <input type="number" name="miktar[]" class="form-control miktar"
+                                        value="<?php echo $kalem['miktar']; ?>" min="1" required>
                                 </td>
                                 <td>
-                                    <input type="number" name="birim_fiyat[]" class="form-control birim_fiyat" 
-                                           step="0.01" min="0" value="<?php echo $kalem['birim_fiyat']; ?>" required>
+                                    <input type="number" name="birim_fiyat[]" class="form-control birim_fiyat"
+                                        step="0.01" min="0" value="<?php echo $kalem['birim_fiyat']; ?>" required>
                                 </td>
                                 <td>
-                                    <input type="number" name="kalem_toplam[]" class="form-control kalem_toplam" 
-                                           step="0.01" value="<?php echo $kalem['toplam_fiyat']; ?>" readonly>
+                                    <input type="number" name="kalem_toplam[]" class="form-control kalem_toplam"
+                                        step="0.01" value="<?php echo $kalem['toplam_fiyat']; ?>" readonly>
                                 </td>
                                 <td>
                                     <button type="button" class="btn btn-danger btn-sm kalem-sil">
@@ -234,29 +234,29 @@ require_once 'templates/header.php';
                             <div class="row mb-2">
                                 <label class="col-sm-4 col-form-label">Ara Toplam:</label>
                                 <div class="col-sm-8">
-                                    <input type="number" name="toplam_tutar" id="toplam_tutar" 
-                                           class="form-control" step="0.01" value="<?php echo $fatura['toplam_tutar']; ?>" readonly>
+                                    <input type="number" name="toplam_tutar" id="toplam_tutar"
+                                        class="form-control" step="0.01" value="<?php echo $fatura['toplam_tutar']; ?>" readonly>
                                 </div>
                             </div>
                             <div class="row mb-2">
                                 <label class="col-sm-4 col-form-label">KDV Oranı (%):</label>
                                 <div class="col-sm-8">
-                                    <input type="number" name="kdv_orani" id="kdv_orani" 
-                                           class="form-control" value="<?php echo $fatura['kdv_orani']; ?>" min="0" max="100" required>
+                                    <input type="number" name="kdv_orani" id="kdv_orani"
+                                        class="form-control" value="<?php echo $fatura['kdv_orani']; ?>" min="0" max="100" required>
                                 </div>
                             </div>
                             <div class="row mb-2">
                                 <label class="col-sm-4 col-form-label">KDV Tutarı:</label>
                                 <div class="col-sm-8">
-                                    <input type="number" name="kdv_tutari" id="kdv_tutari" 
-                                           class="form-control" step="0.01" value="<?php echo $fatura['kdv_tutari']; ?>" readonly>
+                                    <input type="number" name="kdv_tutari" id="kdv_tutari"
+                                        class="form-control" step="0.01" value="<?php echo $fatura['kdv_tutari']; ?>" readonly>
                                 </div>
                             </div>
                             <div class="row mb-2">
                                 <label class="col-sm-4 col-form-label">Genel Toplam:</label>
                                 <div class="col-sm-8">
-                                    <input type="number" name="genel_toplam" id="genel_toplam" 
-                                           class="form-control" step="0.01" value="<?php echo $fatura['genel_toplam']; ?>" readonly>
+                                    <input type="number" name="genel_toplam" id="genel_toplam"
+                                        class="form-control" step="0.01" value="<?php echo $fatura['genel_toplam']; ?>" readonly>
                                 </div>
                             </div>
                         </div>
@@ -274,20 +274,20 @@ require_once 'templates/header.php';
 </div>
 
 <script>
-$(document).ready(function() {
-    // Para birimi sembolünü güncelle
-    function updateCurrencySymbol() {
-        var symbol = $('#currency_id option:selected').data('symbol');
-        $('.currency-symbol').text(symbol);
-    }
+    $(document).ready(function() {
+        // Para birimi sembolünü güncelle
+        function updateCurrencySymbol() {
+            var symbol = $('#currency_id option:selected').data('symbol');
+            $('.currency-symbol').text(symbol);
+        }
 
-    // Sayfa yüklendiğinde ve para birimi değiştiğinde sembolü güncelle
-    updateCurrencySymbol();
-    $('#currency_id').on('change', updateCurrencySymbol);
+        // Sayfa yüklendiğinde ve para birimi değiştiğinde sembolü güncelle
+        updateCurrencySymbol();
+        $('#currency_id').on('change', updateCurrencySymbol);
 
-    // Yeni kalem satırı ekle
-    $('#kalemEkle').click(function() {
-        var yeniSatir = `
+        // Yeni kalem satırı ekle
+        $('#kalemEkle').click(function() {
+            var yeniSatir = `
             <tr>
                 <td>
                     <input type="text" name="urun_adi[]" class="form-control" required>
@@ -310,48 +310,48 @@ $(document).ready(function() {
                 </td>
             </tr>
         `;
-        $('#kalemlerTablosu tbody').append(yeniSatir);
-    });
-
-    // Kalem satırı sil
-    $(document).on('click', '.kalem-sil', function() {
-        if ($('#kalemlerTablosu tbody tr').length > 1) {
-            $(this).closest('tr').remove();
-            hesaplaToplamlar();
-        }
-    });
-
-    // Miktar veya birim fiyat değiştiğinde
-    $(document).on('input', '.miktar, .birim_fiyat', function() {
-        var tr = $(this).closest('tr');
-        var miktar = parseFloat(tr.find('.miktar').val()) || 0;
-        var birimFiyat = parseFloat(tr.find('.birim_fiyat').val()) || 0;
-        var kalemToplam = miktar * birimFiyat;
-        tr.find('.kalem_toplam').val(kalemToplam.toFixed(2));
-        hesaplaToplamlar();
-    });
-
-    // KDV oranı değiştiğinde
-    $('#kdv_orani').on('input', function() {
-        hesaplaToplamlar();
-    });
-
-    // Toplamları hesapla
-    function hesaplaToplamlar() {
-        var araToplam = 0;
-        $('.kalem_toplam').each(function() {
-            araToplam += parseFloat($(this).val()) || 0;
+            $('#kalemlerTablosu tbody').append(yeniSatir);
         });
 
-        var kdvOrani = parseFloat($('#kdv_orani').val()) || 0;
-        var kdvTutari = araToplam * (kdvOrani / 100);
-        var genelToplam = araToplam + kdvTutari;
+        // Kalem satırı sil
+        $(document).on('click', '.kalem-sil', function() {
+            if ($('#kalemlerTablosu tbody tr').length > 1) {
+                $(this).closest('tr').remove();
+                hesaplaToplamlar();
+            }
+        });
 
-        $('#toplam_tutar').val(araToplam.toFixed(2));
-        $('#kdv_tutari').val(kdvTutari.toFixed(2));
-        $('#genel_toplam').val(genelToplam.toFixed(2));
-    }
-});
+        // Miktar veya birim fiyat değiştiğinde
+        $(document).on('input', '.miktar, .birim_fiyat', function() {
+            var tr = $(this).closest('tr');
+            var miktar = parseFloat(tr.find('.miktar').val()) || 0;
+            var birimFiyat = parseFloat(tr.find('.birim_fiyat').val()) || 0;
+            var kalemToplam = miktar * birimFiyat;
+            tr.find('.kalem_toplam').val(kalemToplam.toFixed(2));
+            hesaplaToplamlar();
+        });
+
+        // KDV oranı değiştiğinde
+        $('#kdv_orani').on('input', function() {
+            hesaplaToplamlar();
+        });
+
+        // Toplamları hesapla
+        function hesaplaToplamlar() {
+            var araToplam = 0;
+            $('.kalem_toplam').each(function() {
+                araToplam += parseFloat($(this).val()) || 0;
+            });
+
+            var kdvOrani = parseFloat($('#kdv_orani').val()) || 0;
+            var kdvTutari = araToplam * (kdvOrani / 100);
+            var genelToplam = araToplam + kdvTutari;
+
+            $('#toplam_tutar').val(araToplam.toFixed(2));
+            $('#kdv_tutari').val(kdvTutari.toFixed(2));
+            $('#genel_toplam').val(genelToplam.toFixed(2));
+        }
+    });
 </script>
 
-<?php require_once 'templates/footer.php'; ?> 
+<?php require_once 'templates/footer.php'; ?>

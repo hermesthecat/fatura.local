@@ -32,7 +32,7 @@ $faturalar = $db->query("SELECT f.*, c.firma_adi as musteri_adi, cur.sembol as p
         </div>
         <div class="col text-end">
             <a href="fatura_olustur.php" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Yeni Fatura
+                <i class="bi bi-plus-circle"></i> Fatura Oluştur
             </a>
         </div>
     </div>

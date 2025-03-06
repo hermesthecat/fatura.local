@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_POST['remember']) && $_POST['remember'] == 1) {
                 $token = bin2hex(random_bytes(32));
                 $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
-                
+
                 $db->query(
                     "INSERT INTO remember_tokens (user_id, token, expires_at) VALUES (:user_id, :token, :expires)",
                     [
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ':expires' => $expires
                     ]
                 );
-                
+
                 setcookie('remember_token', $token, strtotime('+30 days'), '/', '', true, true);
             }
 

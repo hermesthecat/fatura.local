@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Genel fonksiyonlar
  * @author A. Kerem Gök
@@ -10,7 +11,8 @@
  * @param string $tur Mesaj türü (success, danger, warning, info)
  * @return void
  */
-function mesaj_ekle($mesaj, $tur = 'info') {
+function mesaj_ekle($mesaj, $tur = 'info')
+{
     if (!isset($_SESSION['mesajlar'])) {
         $_SESSION['mesajlar'] = [];
     }
@@ -24,7 +26,8 @@ function mesaj_ekle($mesaj, $tur = 'info') {
  * Mesajları gösterme fonksiyonu
  * @return string HTML formatında mesajlar
  */
-function mesaj_goster() {
+function mesaj_goster()
+{
     if (isset($_SESSION['mesaj'])) {
         $mesaj = $_SESSION['mesaj'];
         unset($_SESSION['mesaj']);
@@ -41,7 +44,8 @@ function mesaj_goster() {
  * @param float $tutar Formatlanacak tutar
  * @return string Formatlanmış tutar
  */
-function para_format($tutar) {
+function para_format($tutar)
+{
     return number_format($tutar, 2, ',', '.');
 }
 
@@ -50,7 +54,8 @@ function para_format($tutar) {
  * @param string $tarih MySQL tarih formatı
  * @return string dd.mm.yyyy formatında tarih
  */
-function tarih_format($tarih) {
+function tarih_format($tarih)
+{
     return date('d.m.Y', strtotime($tarih));
 }
 
@@ -59,12 +64,14 @@ function tarih_format($tarih) {
  * @param string $str Güvenli hale getirilecek string
  * @return string Güvenli string
  */
-function guvenli_str($str) {
+function guvenli_str($str)
+{
     return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8');
 }
 
 // Para formatı
-function formatPara($tutar, $para_birimi_sembol = null) {
+function formatPara($tutar, $para_birimi_sembol = null)
+{
     if ($para_birimi_sembol === null && isset($_SESSION['fatura']['para_birimi_sembol'])) {
         $para_birimi_sembol = $_SESSION['fatura']['para_birimi_sembol'];
     }
@@ -72,14 +79,16 @@ function formatPara($tutar, $para_birimi_sembol = null) {
 }
 
 // Tarih formatı
-function formatTarih($tarih) {
+function formatTarih($tarih)
+{
     return date('d.m.Y', strtotime($tarih));
 }
 
 // XSS koruması
-function guvenlik($data) {
-    if(is_array($data)) {
-        foreach($data as $key => $value) {
+function guvenlik($data)
+{
+    if (is_array($data)) {
+        foreach ($data as $key => $value) {
             $data[$key] = guvenlik($value);
         }
     } else {
@@ -89,7 +98,8 @@ function guvenlik($data) {
 }
 
 // Fatura numarası oluşturma
-function fatura_no_uret() {
+function fatura_no_uret()
+{
     $prefix = FATURA_PREFIX;
     $yil = date('Y');
     $ay = date('m');
@@ -98,7 +108,8 @@ function fatura_no_uret() {
 }
 
 // CSRF token oluşturma
-function csrf_token_olustur() {
+function csrf_token_olustur()
+{
     if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
@@ -106,7 +117,8 @@ function csrf_token_olustur() {
 }
 
 // CSRF token kontrolü
-function csrf_token_kontrol($token) {
+function csrf_token_kontrol($token)
+{
     if (!isset($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
         die('CSRF token doğrulaması başarısız!');
     }
@@ -114,12 +126,14 @@ function csrf_token_kontrol($token) {
 }
 
 // CSRF token field oluşturma
-function csrf_token_field() {
+function csrf_token_field()
+{
     return '<input type="hidden" name="csrf_token" value="' . csrf_token_olustur() . '">';
 }
 
 // Başarı mesajı
-function basari($mesaj) {
+function basari($mesaj)
+{
     $_SESSION['mesaj'] = [
         'tur' => 'success',
         'icerik' => $mesaj
@@ -127,39 +141,64 @@ function basari($mesaj) {
 }
 
 // Hata mesajı
-function hata($mesaj) {
+function hata($mesaj)
+{
     $_SESSION['mesaj'] = [
         'tur' => 'danger',
         'icerik' => $mesaj
     ];
 }
 
-function sayiyiYaziyaCevir($sayi) {
+function sayiyiYaziyaCevir($sayi)
+{
     $birler = array(
-        "", "BİR", "İKİ", "ÜÇ", "DÖRT", "BEŞ", "ALTI", "YEDİ", "SEKİZ", "DOKUZ"
+        "",
+        "BİR",
+        "İKİ",
+        "ÜÇ",
+        "DÖRT",
+        "BEŞ",
+        "ALTI",
+        "YEDİ",
+        "SEKİZ",
+        "DOKUZ"
     );
     $onlar = array(
-        "", "ON", "YİRMİ", "OTUZ", "KIRK", "ELLİ", "ALTMIŞ", "YETMİŞ", "SEKSEN", "DOKSAN"
+        "",
+        "ON",
+        "YİRMİ",
+        "OTUZ",
+        "KIRK",
+        "ELLİ",
+        "ALTMIŞ",
+        "YETMİŞ",
+        "SEKSEN",
+        "DOKSAN"
     );
     $binler = array(
-        "", "BİN", "MİLYON", "MİLYAR", "TRİLYON", "KATRİLYON"
+        "",
+        "BİN",
+        "MİLYON",
+        "MİLYAR",
+        "TRİLYON",
+        "KATRİLYON"
     );
 
     // Sayıyı düzgün formata getir
     $sayi = floatval($sayi);
     $sayi = number_format($sayi, 2, '.', '');
-    
+
     // Tam ve ondalık kısımları ayır
     $sayi_parcalari = explode('.', $sayi);
     $tam_kisim = $sayi_parcalari[0];
-    
+
     // Ondalık kısmı kontrol et ve düzenle
     $ondalik_kisim = "00";
     if (isset($sayi_parcalari[1])) {
         $ondalik_kisim = str_pad($sayi_parcalari[1], 2, "0", STR_PAD_RIGHT);
         $ondalik_kisim = substr($ondalik_kisim, 0, 2);
     }
-    
+
     if ($tam_kisim == 0) {
         return "SIFIR TÜRK LİRASI " . $ondalik_kisim . " KURUŞ";
     }
@@ -203,7 +242,7 @@ function sayiyiYaziyaCevir($sayi) {
             if ($i == 2 && $basamak == "BİR") {
                 $yazi = "BİN" . $yazi;
             } else {
-                $yazi = $basamak . $binler[$i-1] . $yazi;
+                $yazi = $basamak . $binler[$i - 1] . $yazi;
             }
         } else if ($i == 2) { // Binler basamağı boş ama gerekli
             $yazi = "BİN" . $yazi;
@@ -216,14 +255,15 @@ function sayiyiYaziyaCevir($sayi) {
     return $yazi . " TÜRK LİRASI " . $ondalik_kisim . " KURUŞ";
 }
 
-function mesaj_yonlendir($mesaj, $tur = 'success', $url = null) {
+function mesaj_yonlendir($mesaj, $tur = 'success', $url = null)
+{
     $_SESSION['mesaj'] = [
         'icerik' => $mesaj,
         'tur' => $tur
     ];
-    
+
     if ($url) {
         header('Location: ' . $url);
         exit;
     }
-} 
+}

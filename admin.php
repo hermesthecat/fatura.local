@@ -170,7 +170,7 @@ $users = $db->query("SELECT * FROM users ORDER BY ad_soyad")->fetchAll();
         </div>
         <div class="col text-end">
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#yeniKullaniciModal">
-                <i class="bi bi-person-plus"></i> Yeni Kullanıcı
+                <i class="bi bi-person-plus"></i> Kullanıcı Ekle
             </button>
         </div>
     </div>
@@ -277,7 +277,7 @@ $users = $db->query("SELECT * FROM users ORDER BY ad_soyad")->fetchAll();
                                                         <input type="checkbox" class="form-check-input" name="aktif" value="1" <?php echo $user['aktif'] == 1 ? 'checked' : ''; ?>>
                                                         <label class="form-check-label">Aktiflik</label>
                                                     </div>
-                                                </div>  
+                                                </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>

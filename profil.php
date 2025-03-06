@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Kullanıcı Profil Sayfası
  * @author A. Kerem Gök
@@ -34,8 +35,10 @@ if (isset($_POST['guncelle'])) {
     // Şifre değişikliği yapılacaksa
     if (!empty($mevcut_sifre) || !empty($yeni_sifre) || !empty($yeni_sifre_tekrar)) {
         // Mevcut şifre kontrolü
-        $user = $db->query("SELECT password FROM users WHERE id = :id", 
-            [':id' => $_SESSION['user']['id']])->fetch();
+        $user = $db->query(
+            "SELECT password FROM users WHERE id = :id",
+            [':id' => $_SESSION['user']['id']]
+        )->fetch();
 
         if (!password_verify($mevcut_sifre, $user['password'])) {
             $hatalar[] = "Mevcut şifreniz hatalı.";
@@ -56,7 +59,8 @@ if (isset($_POST['guncelle'])) {
         try {
             if (!empty($yeni_sifre)) {
                 // Şifre değişikliği varsa
-                $db->query("UPDATE users SET 
+                $db->query(
+                    "UPDATE users SET 
                     ad_soyad = :ad_soyad,
                     email = :email,
                     password = :password
@@ -66,10 +70,12 @@ if (isset($_POST['guncelle'])) {
                         ':email' => $email,
                         ':password' => password_hash($yeni_sifre, PASSWORD_DEFAULT),
                         ':id' => $_SESSION['user']['id']
-                    ]);
+                    ]
+                );
             } else {
                 // Şifre değişikliği yoksa
-                $db->query("UPDATE users SET 
+                $db->query(
+                    "UPDATE users SET 
                     ad_soyad = :ad_soyad,
                     email = :email
                     WHERE id = :id",
@@ -77,7 +83,8 @@ if (isset($_POST['guncelle'])) {
                         ':ad_soyad' => $ad_soyad,
                         ':email' => $email,
                         ':id' => $_SESSION['user']['id']
-                    ]);
+                    ]
+                );
             }
 
             // Session'daki bilgileri güncelle
@@ -96,8 +103,10 @@ if (isset($_POST['guncelle'])) {
 }
 
 // Kullanıcı bilgilerini getir
-$user = $db->query("SELECT * FROM users WHERE id = :id", 
-    [':id' => $_SESSION['user']['id']])->fetch();
+$user = $db->query(
+    "SELECT * FROM users WHERE id = :id",
+    [':id' => $_SESSION['user']['id']]
+)->fetch();
 
 // Hata mesajlarını al
 $hatalar = $_SESSION['hatalar'] ?? [];
@@ -217,12 +226,14 @@ unset($_SESSION['hatalar']);
                         <i class="bi bi-building me-2"></i>Erişim Verilen Şirketler
                     </h5>
                     <?php
-                    $sirketler = $db->query("SELECT c.* 
+                    $sirketler = $db->query(
+                        "SELECT c.* 
                         FROM companies c 
                         INNER JOIN user_companies uc ON uc.company_id = c.id 
                         WHERE uc.user_id = :user_id 
                         ORDER BY c.unvan",
-                        [':user_id' => $_SESSION['user']['id']])->fetchAll();
+                        [':user_id' => $_SESSION['user']['id']]
+                    )->fetchAll();
                     ?>
                     <?php if (!empty($sirketler)): ?>
                         <ul class="list-group list-group-flush">
@@ -245,30 +256,30 @@ unset($_SESSION['hatalar']);
 </div>
 
 <script>
-// Form validasyon
-(function () {
-    'use strict'
-    var forms = document.querySelectorAll('.needs-validation')
-    Array.prototype.slice.call(forms).forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-            if (!form.checkValidity()) {
-                event.preventDefault()
-                event.stopPropagation()
-            }
-            form.classList.add('was-validated')
-        }, false)
-    })
-})()
+    // Form validasyon
+    (function() {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
 
-// Şifre eşleştirme kontrolü
-document.querySelector('input[name="yeni_sifre_tekrar"]').addEventListener('input', function(e) {
-    var yeni_sifre = document.querySelector('input[name="yeni_sifre"]').value;
-    if (this.value !== yeni_sifre) {
-        this.setCustomValidity('Şifreler eşleşmiyor.');
-    } else {
-        this.setCustomValidity('');
-    }
-});
+    // Şifre eşleştirme kontrolü
+    document.querySelector('input[name="yeni_sifre_tekrar"]').addEventListener('input', function(e) {
+        var yeni_sifre = document.querySelector('input[name="yeni_sifre"]').value;
+        if (this.value !== yeni_sifre) {
+            this.setCustomValidity('Şifreler eşleşmiyor.');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
 </script>
 
-<?php require_once 'templates/footer.php'; ?> 
+<?php require_once 'templates/footer.php'; ?>

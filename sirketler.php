@@ -59,7 +59,7 @@ $sirketler = $db->query($sql)->fetchAll();
         <div class="col text-end">
             <?php if ($_SESSION['user']['rol'] == 'admin'): ?>
                 <a href="sirket_ekle.php" class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> Yeni Şirket Ekle
+                    <i class="bi bi-plus-circle"></i> Şirket Ekle
                 </a>
             <?php endif; ?>
         </div>

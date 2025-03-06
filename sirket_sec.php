@@ -21,7 +21,7 @@ if (!isset($_GET['id'])) {
 
 try {
     $db = Database::getInstance();
-    
+
     // Şirket bilgilerini al ve kullanıcının yetkisi var mı kontrol et
     $sirket = $db->query(
         "SELECT c.* FROM companies c 
@@ -52,7 +52,7 @@ try {
     $_SESSION['company_iban'] = $sirket['iban'];
 
     basari($sirket['unvan'] . " şirketi seçildi.");
-    
+
     // Önceki sayfaya yönlendir
     if (isset($_SERVER['HTTP_REFERER'])) {
         header('Location: ' . $_SERVER['HTTP_REFERER']);
@@ -60,9 +60,8 @@ try {
         header('Location: index.php');
     }
     exit;
-    
 } catch (Exception $e) {
     hata($e->getMessage());
     header('Location: index.php');
     exit;
-} 
+}

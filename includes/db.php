@@ -35,7 +35,7 @@ class Database
     {
         try {
             $stmt = $this->pdo->prepare($sql);
-            
+
             // Parametreleri bind et
             foreach ($params as $key => $value) {
                 $type = is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
@@ -47,7 +47,7 @@ class Database
                     $stmt->bindValue($key, $value, $type);
                 }
             }
-            
+
             $stmt->execute();
             return $stmt;
         } catch (PDOException $e) {

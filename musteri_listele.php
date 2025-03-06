@@ -31,7 +31,7 @@ require_once 'templates/header.php';
             </small>
         </div>
         <a href="musteri_ekle.php" class="btn btn-primary">
-            <i class="bi bi-plus"></i> Yeni Müşteri
+            <i class="bi bi-plus"></i> Müşteri Ekle
         </a>
     </div>
     <div class="card-body">
@@ -57,12 +57,12 @@ require_once 'templates/header.php';
                             <td><?php echo guvenlik($musteri['email']); ?></td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="musteri_duzenle.php?id=<?php echo $musteri['id']; ?>" 
-                                       class="btn btn-warning" title="Düzenle">
+                                    <a href="musteri_duzenle.php?id=<?php echo $musteri['id']; ?>"
+                                        class="btn btn-warning" title="Düzenle">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <button type="button" class="btn btn-danger musteri-sil" 
-                                            data-id="<?php echo $musteri['id']; ?>" title="Sil">
+                                    <button type="button" class="btn btn-danger musteri-sil"
+                                        data-id="<?php echo $musteri['id']; ?>" title="Sil">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -76,38 +76,42 @@ require_once 'templates/header.php';
 </div>
 
 <script>
-$(document).ready(function() {
-    // DataTables Türkçe dil desteği
-    $('#musteriTablosu').DataTable({
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
-        },
-        order: [[0, 'asc']], // Firma adına göre sırala
-        columnDefs: [
-            { orderable: false, targets: 5 } // İşlemler sütununu sıralamadan çıkar
-        ]
-    });
+    $(document).ready(function() {
+        // DataTables Türkçe dil desteği
+        $('#musteriTablosu').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+            },
+            order: [
+                [0, 'asc']
+            ], // Firma adına göre sırala
+            columnDefs: [{
+                    orderable: false,
+                    targets: 5
+                } // İşlemler sütununu sıralamadan çıkar
+            ]
+        });
 
-    // Müşteri silme işlemi
-    $('.musteri-sil').click(function() {
-        var musteriId = $(this).data('id');
-        
-        Swal.fire({
-            title: 'Emin misiniz?',
-            text: "Bu müşteri kalıcı olarak silinecek!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Evet, sil!',
-            cancelButtonText: 'İptal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = 'musteri_sil.php?id=' + musteriId;
-            }
+        // Müşteri silme işlemi
+        $('.musteri-sil').click(function() {
+            var musteriId = $(this).data('id');
+
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu müşteri kalıcı olarak silinecek!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Evet, sil!',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'musteri_sil.php?id=' + musteriId;
+                }
+            });
         });
     });
-});
 </script>
 
-<?php require_once 'templates/footer.php'; ?> 
+<?php require_once 'templates/footer.php'; ?>

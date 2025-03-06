@@ -47,22 +47,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tmp_name = $_FILES['logo']['tmp_name'];
             $name = basename($_FILES['logo']['name']);
             $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-            
+
             // Dosya türü kontrolü
             if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
                 throw new Exception("Sadece JPG, JPEG ve PNG dosyaları yüklenebilir!");
             }
-            
+
             // Dosya boyutu kontrolü (2MB)
             if ($_FILES['logo']['size'] > 2 * 1024 * 1024) {
                 throw new Exception("Logo dosyası 2MB'dan büyük olamaz!");
             }
-            
+
             // Eski logoyu sil
             if ($company['logo'] && file_exists($company['logo'])) {
                 unlink($company['logo']);
             }
-            
+
             // Yeni logoyu kaydet
             $logo_path = 'uploads/logos/' . uniqid() . '.' . $ext;
             if (!move_uploaded_file($tmp_name, $logo_path)) {
@@ -117,16 +117,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($ayarlar as $ayar_adi => $ayar_degeri) {
             if (!empty($ayar_degeri)) {
                 // Önce mevcut ayarı sil
-                $db->query("DELETE FROM company_settings WHERE company_id = :company_id AND ayar_adi = :ayar_adi",
-                    [':company_id' => $company_id, ':ayar_adi' => $ayar_adi]);
-                
+                $db->query(
+                    "DELETE FROM company_settings WHERE company_id = :company_id AND ayar_adi = :ayar_adi",
+                    [':company_id' => $company_id, ':ayar_adi' => $ayar_adi]
+                );
+
                 // Yeni ayarı ekle
-                $db->query("INSERT INTO company_settings (company_id, ayar_adi, ayar_degeri) VALUES (:company_id, :ayar_adi, :ayar_degeri)",
+                $db->query(
+                    "INSERT INTO company_settings (company_id, ayar_adi, ayar_degeri) VALUES (:company_id, :ayar_adi, :ayar_degeri)",
                     [
                         ':company_id' => $company_id,
                         ':ayar_adi' => $ayar_adi,
                         ':ayar_degeri' => $ayar_degeri
-                    ]);
+                    ]
+                );
             }
         }
 
@@ -160,7 +164,7 @@ require_once 'templates/header.php';
                 <div class="row">
                     <div class="col-md-6">
                         <h5 class="card-title mb-4">Şirket Bilgileri</h5>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Logo</label>
                             <?php if ($company['logo']): ?>
@@ -269,4 +273,4 @@ require_once 'templates/header.php';
     </div>
 </div>
 
-<?php require_once 'templates/footer.php'; ?> 
+<?php require_once 'templates/footer.php'; ?>
