@@ -48,6 +48,24 @@ CREATE TABLE IF NOT EXISTS customers (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+-- Para birimleri tablosu
+CREATE TABLE IF NOT EXISTS `currencies` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `kod` varchar(3) NOT NULL,
+    `sembol` varchar(5) NOT NULL,
+    `ad` varchar(50) NOT NULL,
+    `aktif` tinyint(1) NOT NULL DEFAULT 1,
+    `varsayilan` tinyint(1) NOT NULL DEFAULT 0,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `kod` (`kod`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+-- Varsayılan para birimleri
+INSERT INTO `currencies` (`kod`, `sembol`, `ad`, `aktif`, `varsayilan`)
+VALUES ('TRY', '₺', 'Türk Lirası', 1, 1),
+    ('USD', '$', 'Amerikan Doları', 1, 0),
+    ('EUR', '€', 'Euro', 1, 0),
+    ('GBP', '£', 'İngiliz Sterlini', 1, 0);
 -- Faturalar tablosu güncelleme
 DROP TABLE IF EXISTS invoices;
 CREATE TABLE IF NOT EXISTS invoices (
@@ -154,16 +172,9 @@ VALUES (
     );
 -- Admin kullanıcısını test şirketine ekle
 INSERT INTO `user_companies` (`user_id`, `company_id`)
-SELECT (
-        SELECT `id`
-        FROM `users`
-        WHERE `username` = 'admin'
-    ),
-    (
-        SELECT `id`
-        FROM `companies`
-        WHERE `unvan` = 'Test Şirketi A.Ş.'
-    );
+SELECT 
+    (SELECT `id` FROM `users` WHERE `username` = 'admin' LIMIT 1) as user_id,
+    (SELECT `id` FROM `companies` WHERE `unvan` = 'Test Şirketi A.Ş.' LIMIT 1) as company_id;
 -- Remember Tokens tablosu
 CREATE TABLE IF NOT EXISTS `remember_tokens` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -203,65 +214,4 @@ VALUES ('fatura_prefix', 'INV', 'Fatura numarası öneki'),
         'varsayilan_para_birimi',
         '1',
         'Varsayılan para birimi ID'
-    );
--- Para birimleri tablosu
-CREATE TABLE IF NOT EXISTS `currencies` (
-    `id` int(11) NOT NULL AUTO_INCREMENT,
-    `kod` varchar(3) NOT NULL,
-    `sembol` varchar(5) NOT NULL,
-    `ad` varchar(50) NOT NULL,
-    `aktif` tinyint(1) NOT NULL DEFAULT 1,
-    `varsayilan` tinyint(1) NOT NULL DEFAULT 0,
-    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `kod` (`kod`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
--- Varsayılan para birimleri
-INSERT INTO `currencies` (`kod`, `sembol`, `ad`, `aktif`, `varsayilan`)
-VALUES ('TRY', '₺', 'Türk Lirası', 1, 1),
-    ('USD', '$', 'Amerikan Doları', 1, 0),
-    ('EUR', '€', 'Euro', 1, 0),
-    ('GBP', '£', 'İngiliz Sterlini', 1, 0);
--- Test şirketi
-INSERT INTO `companies` (
-        `unvan`,
-        `adres`,
-        `sehir`,
-        `telefon`,
-        `email`,
-        `vergi_dairesi`,
-        `vergi_no`,
-        `web`,
-        `mersis_no`,
-        `ticaret_sicil_no`,
-        `banka_adi`,
-        `iban`,
-        `aktif`
-    )
-VALUES (
-        'Test Şirketi A.Ş.',
-        'Test Mahallesi Test Sokak No:1',
-        'İstanbul',
-        '0212 123 45 67',
-        'info@testfirma.com',
-        'Test Vergi Dairesi',
-        '1234567890',
-        'www.testfirma.com',
-        '0123456789012345',
-        '123456',
-        'Test Bank',
-        'TR12 3456 7890 1234 5678 9012 34',
-        1
-    );
--- Admin kullanıcısını test şirketine ekle
-INSERT INTO `user_companies` (`user_id`, `company_id`)
-SELECT (
-        SELECT `id`
-        FROM `users`
-        WHERE `username` = 'admin'
-    ),
-    (
-        SELECT `id`
-        FROM `companies`
-        WHERE `unvan` = 'Test Şirketi A.Ş.'
     );
