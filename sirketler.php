@@ -68,7 +68,7 @@ $sirketler = $db->query($sql)->fetchAll();
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-striped table-hover table-responsive">
+                <table class="table table-striped table-hover table-responsive" id="sirketTablosu">
                     <thead>
                         <tr>
                             <th>Ünvan</th>
@@ -127,5 +127,13 @@ $sirketler = $db->query($sql)->fetchAll();
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        $('#sirketTablosu').DataTable({
+            responsive: true
+        });
+    });
+</script>
 
 <?php require_once 'templates/footer.php'; ?>
