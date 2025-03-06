@@ -33,6 +33,13 @@ class Database
     public function query($sql, $params = [])
     {
         try {
+            // Debug bilgileri
+            echo "<pre>";
+            echo "Database->query() çağrıldı:\n";
+            echo "SQL: " . $sql . "\n";
+            echo "Params: "; print_r($params);
+            echo "</pre>";
+
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
             return $stmt;
