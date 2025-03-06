@@ -190,14 +190,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script>
 $(document).ready(function() {
+    // İlk yükleme için hesapla
+    hesaplaToplamlar();
+
     // Yeni kalem satırı ekle
-    $('#kalemEkle').click(function() {
-        var yeniSatir = $('#kalemlerTablosu tbody tr:first').clone();
-        yeniSatir.find('input').val('');
-        yeniSatir.find('input[name="miktar[]"]').val(1);
-        yeniSatir.find('input[name="birim_fiyat[]"]').val('0.00');
-        yeniSatir.find('input[name="kalem_toplam[]"]').val('0.00');
+    $('#kalemEkle').on('click', function(e) {
+        e.preventDefault();
+        var yeniSatir = `
+            <tr>
+                <td><input type="text" name="urun_adi[]" class="form-control" required></td>
+                <td><input type="number" name="miktar[]" class="form-control miktar" value="1" min="1" required></td>
+                <td><input type="number" name="birim_fiyat[]" class="form-control birim_fiyat" step="0.01" min="0" value="0.00" required></td>
+                <td><input type="number" name="kalem_toplam[]" class="form-control kalem_toplam" step="0.01" value="0.00" readonly></td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm kalem-sil">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
         $('#kalemlerTablosu tbody').append(yeniSatir);
+        hesaplaToplamlar();
     });
 
     // Kalem satırı sil
@@ -209,25 +222,31 @@ $(document).ready(function() {
     });
 
     // Miktar veya birim fiyat değiştiğinde
-    $(document).on('input', '.miktar, .birim_fiyat', function() {
-        var tr = $(this).closest('tr');
-        var miktar = parseFloat(tr.find('.miktar').val()) || 0;
-        var birimFiyat = parseFloat(tr.find('.birim_fiyat').val()) || 0;
-        var kalemToplam = miktar * birimFiyat;
-        tr.find('.kalem_toplam').val(kalemToplam.toFixed(2));
+    $(document).on('input change keyup', '.miktar, .birim_fiyat', function() {
+        hesaplaSatirToplam($(this).closest('tr'));
         hesaplaToplamlar();
     });
 
     // KDV oranı değiştiğinde
-    $('#kdv_orani').on('input', function() {
+    $('#kdv_orani').on('input change keyup', function() {
         hesaplaToplamlar();
     });
+
+    // Satır toplamını hesapla
+    function hesaplaSatirToplam(satir) {
+        var miktar = parseFloat(satir.find('.miktar').val()) || 0;
+        var birimFiyat = parseFloat(satir.find('.birim_fiyat').val()) || 0;
+        var kalemToplam = miktar * birimFiyat;
+        satir.find('.kalem_toplam').val(kalemToplam.toFixed(2));
+    }
 
     // Toplamları hesapla
     function hesaplaToplamlar() {
         var araToplam = 0;
-        $('.kalem_toplam').each(function() {
-            araToplam += parseFloat($(this).val()) || 0;
+        $('#kalemlerTablosu tbody tr').each(function() {
+            var miktar = parseFloat($(this).find('.miktar').val()) || 0;
+            var birimFiyat = parseFloat($(this).find('.birim_fiyat').val()) || 0;
+            araToplam += miktar * birimFiyat;
         });
 
         var kdvOrani = parseFloat($('#kdv_orani').val()) || 0;
