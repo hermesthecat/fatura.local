@@ -16,9 +16,10 @@ if (!isset($_SESSION['company_id'])) {
 $db = Database::getInstance();
 
 // Faturaları listele
-$faturalar = $db->query("SELECT f.*, c.firma_adi as musteri_adi 
+$faturalar = $db->query("SELECT f.*, c.firma_adi as musteri_adi, cur.sembol as para_birimi_sembol 
     FROM invoices f 
     INNER JOIN customers c ON c.id = f.customer_id 
+    INNER JOIN currencies cur ON cur.id = f.currency_id
     WHERE f.company_id = :company_id 
     ORDER BY f.fatura_tarihi DESC", 
     [':company_id' => $_SESSION['company_id']])->fetchAll();
@@ -64,13 +65,13 @@ $faturalar = $db->query("SELECT f.*, c.firma_adi as musteri_adi
                                 <?php endif; ?>
                             </td>
                             <td class="text-end">
-                                <?php echo number_format($fatura['toplam_tutar'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                                <?php echo number_format($fatura['toplam_tutar'], 2, ',', '.'); ?> <?php echo $fatura['para_birimi_sembol']; ?>
                             </td>
                             <td class="text-end">
-                                <?php echo number_format($fatura['kdv_tutari'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                                <?php echo number_format($fatura['kdv_tutari'], 2, ',', '.'); ?> <?php echo $fatura['para_birimi_sembol']; ?>
                             </td>
                             <td class="text-end">
-                                <?php echo number_format($fatura['genel_toplam'], 2, ',', '.'); ?> <?php echo PARA_BIRIMI; ?>
+                                <?php echo number_format($fatura['genel_toplam'], 2, ',', '.'); ?> <?php echo $fatura['para_birimi_sembol']; ?>
                             </td>
                             <td>
                                 <div class="btn-group">
