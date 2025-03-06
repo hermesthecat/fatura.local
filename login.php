@@ -1,8 +1,12 @@
 <?php
+
 /**
  * Giriş Sayfası
  * @author A. Kerem Gök
  */
+
+// Session başlat
+session_start();
 
 require_once 'includes/config.php';
 require_once 'includes/db.php';
@@ -25,29 +29,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Kullanıcı bilgilerini al
-        $email = $_POST['email'];
+        $username = $_POST['username'];
         $password = $_POST['password'];
         $remember = isset($_POST['remember']);
 
         // Kullanıcıyı kontrol et
-        $user = $db->query("SELECT * FROM users WHERE email = :email AND aktif = 1",
-            [':email' => $email])->fetch();
+        $user = $db->query(
+            "SELECT * FROM users WHERE username = :username AND aktif = 1",
+            [':username' => $username]
+        )->fetch();
 
         if (!$user || !password_verify($password, $user['password'])) {
-            throw new Exception('E-posta veya şifre hatalı!');
+            throw new Exception('Kullanıcı adı veya şifre hatalı!');
         }
 
         // Session'a kullanıcı bilgilerini kaydet
         $_SESSION['user'] = [
             'id' => $user['id'],
             'ad_soyad' => $user['ad_soyad'],
-            'email' => $user['email'],
+            'username' => $user['username'],
             'admin' => $user['rol'] === 'admin'
         ];
 
         // Son giriş tarihini güncelle
-        $db->query("UPDATE users SET son_giris = NOW() WHERE id = :id",
-            [':id' => $user['id']]);
+        $db->query(
+            "UPDATE users SET son_giris = NOW() WHERE id = :id",
+            [':id' => $user['id']]
+        );
 
         // Beni hatırla
         if ($remember) {
@@ -56,12 +64,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
 
             // Token'ı veritabanına kaydet
-            $db->query("INSERT INTO remember_tokens (user_id, token, expires) VALUES (:user_id, :token, :expires)",
+            $db->query(
+                "INSERT INTO remember_tokens (user_id, token, expires) VALUES (:user_id, :token, :expires)",
                 [
                     ':user_id' => $user['id'],
                     ':token' => $token,
                     ':expires' => $expires
-                ]);
+                ]
+            );
 
             // Cookie oluştur (30 gün)
             setcookie('remember_token', $token, time() + (86400 * 30), '/', '', true, true);
@@ -84,6 +94,7 @@ $sayfa_baslik = "Giriş Yap";
 ?>
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -96,37 +107,44 @@ $sayfa_baslik = "Giriş Yap";
         body {
             background-color: #f8f9fa;
         }
+
         .login-container {
             max-width: 400px;
             margin: 100px auto;
         }
+
         .card {
             border: none;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
+
         .card-header {
             background: #fff;
             border-bottom: 1px solid #eee;
             border-radius: 10px 10px 0 0 !important;
             padding: 20px;
         }
+
         .card-body {
             padding: 30px;
         }
+
         .form-floating {
             margin-bottom: 20px;
         }
+
         .btn-primary {
             width: 100%;
             padding: 12px;
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <?php echo mesaj_goster(); ?>
-        
+
         <div class="text-center mb-4">
             <h1 class="h3">Fatura Yönetim Sistemi</h1>
             <p class="text-muted">Lütfen giriş yapın</p>
@@ -138,23 +156,23 @@ $sayfa_baslik = "Giriş Yap";
             </div>
             <div class="card-body">
                 <?php if (isset($error)): ?>
-                <div class="alert alert-danger">
-                    <?php echo $error; ?>
-                </div>
+                    <div class="alert alert-danger">
+                        <?php echo $error; ?>
+                    </div>
                 <?php endif; ?>
 
                 <form method="post">
                     <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                    
+
                     <div class="form-floating">
-                        <input type="email" class="form-control" id="email" name="email" 
-                               placeholder="E-posta" required autofocus>
-                        <label for="email">E-posta</label>
+                        <input type="text" class="form-control" id="username" name="username"
+                            placeholder="Kullanıcı Adı" required autofocus>
+                        <label for="username">Kullanıcı Adı</label>
                     </div>
 
                     <div class="form-floating">
-                        <input type="password" class="form-control" id="password" name="password" 
-                               placeholder="Şifre" required>
+                        <input type="password" class="form-control" id="password" name="password"
+                            placeholder="Şifre" required>
                         <label for="password">Şifre</label>
                     </div>
 
@@ -174,4 +192,5 @@ $sayfa_baslik = "Giriş Yap";
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html> 
+
+</html>
