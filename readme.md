@@ -11,7 +11,8 @@
 - vergi_dairesi
 - adres
 - telefon
-- email
+- eposta
+- durum (aktif/pasif)
 - created_at
 - updated_at
 
@@ -21,8 +22,9 @@
 - urun_adi
 - birim_fiyat
 - kdv_orani
-- birim (adet, kg, lt vs)
-- stok_miktari
+- birim (ADET, KG, LT, MT, M2, M3)
+- aciklama
+- durum (aktif/pasif)
 - created_at
 - updated_at
 
@@ -32,7 +34,7 @@
 - customer_id (FK)
 - fatura_tarihi
 - vade_tarihi
-- toplam_tutar
+- ara_toplam
 - kdv_toplam
 - genel_toplam
 - aciklama
@@ -63,7 +65,8 @@
 ├── includes/
 │   ├── functions.php
 │   ├── auth.php
-│   └── header.php
+│   ├── header.php
+│   └── footer.php
 ├── assets/
 │   ├── css/
 │   ├── js/
@@ -73,78 +76,110 @@
 │   ├── Customer.php
 │   ├── Product.php
 │   └── Invoice.php
-├── modules/
-│   ├── customers/
-│   ├── products/
-│   └── invoices/
-└── templates/
-    ├── invoice_template.php
-    └── pdf_template.php
+└── modules/
+    ├── customers/
+    │   ├── index.php
+    │   ├── create.php
+    │   ├── edit.php
+    │   ├── view.php
+    │   └── delete.php
+    ├── products/
+    │   ├── index.php
+    │   ├── create.php
+    │   ├── edit.php
+    │   ├── view.php
+    │   └── delete.php
+    └── invoices/
+        ├── index.php
+        ├── create.php
+        ├── edit.php
+        ├── view.php
+        ├── print.php
+        ├── delete.php
+        ├── add_item.php
+        └── delete_item.php
 ```
 
 ## Temel Özellikler
 
-### 1. Müşteri Yönetimi
+### 1. Müşteri Yönetimi ✅
 - Müşteri ekleme/düzenleme/silme
-- Müşteri listesi görüntüleme
-- Müşteri arama
+- Müşteri listesi görüntüleme (DataTables)
+- Müşteri detay sayfası
+- Müşteriye ait fatura listesi
 
-### 2. Ürün Yönetimi
+### 2. Ürün Yönetimi ✅
 - Ürün ekleme/düzenleme/silme
-- Ürün listesi görüntüleme
-- Stok takibi
-- Ürün arama
+- Ürün listesi görüntüleme (DataTables)
+- Ürün detay sayfası
+- Ürüne ait fatura geçmişi
 
-### 3. Fatura İşlemleri
+### 3. Fatura İşlemleri ✅
 - Yeni fatura oluşturma
 - Fatura düzenleme
 - Fatura silme/iptal etme
 - Fatura önizleme
-- PDF olarak kaydetme/yazdırma
+- Yazdırma görünümü
 - Otomatik fatura numarası oluşturma
 - KDV hesaplama
-- Toplu fatura oluşturma
+- Fatura kalemi ekleme/silme
 
-### 4. Raporlama
-- Aylık/yıllık fatura raporları
-- Müşteri bazlı raporlar
-- Ürün bazlı satış raporları
-- Vadesi geçmiş fatura raporları
+### 4. Genel Özellikler ✅
+- Responsive tasarım (Bootstrap 5)
+- Form doğrulama
+- CSRF koruması
+- XSS koruması
+- DataTables entegrasyonu
+- Select2 entegrasyonu
+- SweetAlert2 entegrasyonu
+- Para birimi formatlaması
+- Tarih formatlaması
+- Telefon numarası formatlaması
+- Hata yönetimi
+- Flash mesajları
 
 ## Kullanılan Teknolojiler
 
 ### 1. Backend
 - PHP 8.x
 - MySQL 8.x
-- PDO için veritabanı bağlantısı
-- Composer (dependency management)
+- PDO veritabanı bağlantısı
 
 ### 2. Frontend
 - HTML5
 - CSS3 (Bootstrap 5)
 - JavaScript (jQuery)
-- AJAX için asenkron işlemler
+- AJAX
 
 ### 3. Ek Kütüphaneler
-- TCPDF/FPDF (PDF oluşturma)
-- PHPMailer (e-posta gönderimi)
 - DataTables (tablo yönetimi)
 - Select2 (gelişmiş select kutuları)
 - SweetAlert2 (bildirimler)
+- FontAwesome (ikonlar)
 
 ## Güvenlik Önlemleri
 
 1. SQL Injection koruması (PDO prepared statements)
-2. XSS koruması
+2. XSS koruması (e() fonksiyonu)
 3. CSRF token kullanımı
 4. Input validasyonu
 5. Oturum yönetimi
 6. Kullanıcı yetkilendirme sistemi
 
-## Kurulum Adımları
+## Kurulum
 
-1. Veritabanı şemasının oluşturulması
-2. Temel klasör yapısının kurulması
-3. Composer ile gerekli paketlerin yüklenmesi
-4. Veritabanı bağlantı sınıfının yazılması
-5. Temel CRUD işlemlerinin oluşturulması
+1. Veritabanı şemasını oluşturun
+2. Composer ile gerekli paketleri yükleyin
+3. `config/database.php` dosyasında veritabanı bağlantı bilgilerini düzenleyin
+4. `config/config.php` dosyasında gerekli ayarları yapın
+5. Web sunucusunu yapılandırın ve uygulamayı çalıştırın
+
+## Geliştirme Aşamasında
+
+1. Raporlama modülü
+2. PDF çıktısı
+3. E-posta gönderimi
+4. Toplu fatura oluşturma
+5. Stok takibi
+6. Döviz kurları
+7. Çoklu dil desteği
