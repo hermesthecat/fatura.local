@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'username' => $user['username'],
                 'ad_soyad' => $user['ad_soyad'],
                 'email' => $user['email'],
-                'admin' => $user['admin']
+                'rol' => $user['rol']
             ];
 
             // Son giriş tarihini güncelle

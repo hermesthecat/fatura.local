@@ -57,9 +57,11 @@ $sirketler = $db->query($sql)->fetchAll();
             <h1 class="h3">Şirketler</h1>
         </div>
         <div class="col text-end">
-            <a href="sirket_ekle.php" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Yeni Şirket Ekle
-            </a>
+            <?php if ($_SESSION['user']['rol'] == 'admin'): ?>
+                <a href="sirket_ekle.php" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Yeni Şirket Ekle
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -103,15 +105,17 @@ $sirketler = $db->query($sql)->fetchAll();
                                             class="btn btn-sm btn-primary" title="Düzenle">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <?php if ($sirket['fatura_sayisi'] == 0): ?>
-                                            <form method="post" class="d-inline"
-                                                onsubmit="return confirm('Bu şirketi silmek istediğinize emin misiniz?');">
-                                                <?php echo csrf_token_field(); ?>
-                                                <input type="hidden" name="id" value="<?php echo $sirket['id']; ?>">
-                                                <button type="submit" name="sil" class="btn btn-sm btn-danger" title="Sil">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
+                                        <?php if ($_SESSION['user']['rol'] == 'admin'): ?>
+                                            <?php if ($sirket['fatura_sayisi'] == 0): ?>
+                                                <form method="post" class="d-inline"
+                                                    onsubmit="return confirm('Bu şirketi silmek istediğinize emin misiniz?');">
+                                                    <?php echo csrf_token_field(); ?>
+                                                    <input type="hidden" name="id" value="<?php echo $sirket['id']; ?>">
+                                                    <button type="submit" name="sil" class="btn btn-sm btn-danger" title="Sil">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </div>
                                 </td>

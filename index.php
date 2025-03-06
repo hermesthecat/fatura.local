@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Ana Sayfa
  * @author A. Kerem Gök
@@ -17,14 +18,16 @@ $db = Database::getInstance();
 // Şirket seçili değilse şirket listesini göster
 if (!isset($_SESSION['company_id'])) {
     // Kullanıcının şirketlerini al
-    $sirketler = $db->query("SELECT c.* 
+    $sirketler = $db->query(
+        "SELECT c.* 
         FROM companies c 
         INNER JOIN user_companies uc ON uc.company_id = c.id 
         WHERE uc.user_id = :user_id AND c.aktif = 1 
-        ORDER BY c.unvan", 
-        [':user_id' => $_SESSION['user']['id']])->fetchAll();
-    ?>
-    
+        ORDER BY c.unvan",
+        [':user_id' => $_SESSION['user']['id']]
+    )->fetchAll();
+?>
+
     <div class="container-fluid py-4">
         <div class="row mb-4">
             <div class="col">
@@ -40,60 +43,66 @@ if (!isset($_SESSION['company_id'])) {
 
         <div class="row g-4">
             <?php foreach ($sirketler as $sirket): ?>
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0 hover-shadow">
-                    <?php if ($sirket['logo']): ?>
-                    <div class="card-img-top bg-light p-4 text-center">
-                        <img src="<?php echo $sirket['logo']; ?>" alt="<?php echo $sirket['unvan']; ?>" style="max-height: 120px; object-fit: contain;">
-                    </div>
-                    <?php endif; ?>
-                    <div class="card-body">
-                        <h5 class="card-title fw-bold mb-3"><?php echo $sirket['unvan']; ?></h5>
-                        <p class="card-text d-flex align-items-center text-muted mb-4">
-                            <i class="bi bi-building me-2"></i>
-                            <?php echo $sirket['vergi_dairesi']; ?> / <?php echo $sirket['vergi_no']; ?>
-                        </p>
-                        <a href="sirket_sec.php?id=<?php echo $sirket['id']; ?>" class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
-                            <i class="bi bi-box-arrow-in-right me-2"></i> Şirketi Seç
-                        </a>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 hover-shadow">
+                        <?php if ($sirket['logo']): ?>
+                            <div class="card-img-top bg-light p-4 text-center">
+                                <img src="<?php echo $sirket['logo']; ?>" alt="<?php echo $sirket['unvan']; ?>" style="max-height: 120px; object-fit: contain;">
+                            </div>
+                        <?php endif; ?>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold mb-3"><?php echo $sirket['unvan']; ?></h5>
+                            <p class="card-text d-flex align-items-center text-muted mb-4">
+                                <i class="bi bi-building me-2"></i>
+                                <?php echo $sirket['vergi_dairesi']; ?> / <?php echo $sirket['vergi_no']; ?>
+                            </p>
+                            <a href="sirket_sec.php?id=<?php echo $sirket['id']; ?>" class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
+                                <i class="bi bi-box-arrow-in-right me-2"></i> Şirketi Seç
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
             <?php endforeach; ?>
 
-            <?php if ($_SESSION['user']['admin']): ?>
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0 bg-light hover-shadow">
-                    <div class="card-body d-flex align-items-center justify-content-center">
-                        <a href="sirket_ekle.php" class="btn btn-outline-primary btn-lg d-flex flex-column align-items-center p-4">
-                            <i class="bi bi-plus-circle fs-1 mb-2"></i>
-                            Yeni Şirket Ekle
-                        </a>
+            <?php if ($_SESSION['user']['rol'] == 'admin'): ?>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 bg-light hover-shadow">
+                        <div class="card-body d-flex align-items-center justify-content-center">
+                            <a href="sirket_ekle.php" class="btn btn-outline-primary btn-lg d-flex flex-column align-items-center p-4">
+                                <i class="bi bi-plus-circle fs-1 mb-2"></i>
+                                Yeni Şirket Ekle
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
             <?php endif; ?>
         </div>
     </div>
-    <?php
+<?php
 } else {
     // Şirket seçili ise özet bilgileri göster
-    $fatura_sayisi = $db->query("SELECT COUNT(*) as sayi FROM invoices WHERE company_id = :company_id",
-        [':company_id' => $_SESSION['company_id']])->fetch()['sayi'];
-    
-    $musteri_sayisi = $db->query("SELECT COUNT(*) as sayi FROM customers WHERE company_id = :company_id",
-        [':company_id' => $_SESSION['company_id']])->fetch()['sayi'];
-    
-    $son_faturalar = $db->query("SELECT f.*, c.firma_adi as musteri_adi, cur.sembol as para_birimi_sembol 
+    $fatura_sayisi = $db->query(
+        "SELECT COUNT(*) as sayi FROM invoices WHERE company_id = :company_id",
+        [':company_id' => $_SESSION['company_id']]
+    )->fetch()['sayi'];
+
+    $musteri_sayisi = $db->query(
+        "SELECT COUNT(*) as sayi FROM customers WHERE company_id = :company_id",
+        [':company_id' => $_SESSION['company_id']]
+    )->fetch()['sayi'];
+
+    $son_faturalar = $db->query(
+        "SELECT f.*, c.firma_adi as musteri_adi, cur.sembol as para_birimi_sembol 
         FROM invoices f 
         INNER JOIN customers c ON c.id = f.customer_id 
         LEFT JOIN currencies cur ON cur.id = f.currency_id 
         WHERE f.company_id = :company_id 
         ORDER BY f.fatura_tarihi DESC 
-        LIMIT 5", 
-        [':company_id' => $_SESSION['company_id']])->fetchAll();
-    ?>
-    
+        LIMIT 5",
+        [':company_id' => $_SESSION['company_id']]
+    )->fetchAll();
+?>
+
     <div class="container-fluid py-4">
         <div class="row mb-4">
             <div class="col">
@@ -103,7 +112,6 @@ if (!isset($_SESSION['company_id'])) {
                 </div>
             </div>
         </div>
-
         <div class="row g-4 mb-4">
             <div class="col-md-6">
                 <div class="card shadow-sm border-0 h-100">
@@ -157,18 +165,18 @@ if (!isset($_SESSION['company_id'])) {
                                 </thead>
                                 <tbody>
                                     <?php foreach ($son_faturalar as $fatura): ?>
-                                    <tr>
-                                        <td>
-                                            <a href="fatura_goruntule.php?id=<?php echo $fatura['id']; ?>" class="text-decoration-none">
-                                                <?php echo $fatura['fatura_no']; ?>
-                                            </a>
-                                        </td>
-                                        <td><?php echo $fatura['musteri_adi']; ?></td>
-                                        <td><?php echo date('d.m.Y', strtotime($fatura['fatura_tarihi'])); ?></td>
-                                        <td class="text-end fw-bold">
-                                            <?php echo number_format($fatura['genel_toplam'], 2, ',', '.'); ?> <?php echo $fatura['para_birimi_sembol'] ?? '₺'; ?>
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                            <td>
+                                                <a href="fatura_goruntule.php?id=<?php echo $fatura['id']; ?>" class="text-decoration-none">
+                                                    <?php echo $fatura['fatura_no']; ?>
+                                                </a>
+                                            </td>
+                                            <td><?php echo $fatura['musteri_adi']; ?></td>
+                                            <td><?php echo date('d.m.Y', strtotime($fatura['fatura_tarihi'])); ?></td>
+                                            <td class="text-end fw-bold">
+                                                <?php echo number_format($fatura['genel_toplam'], 2, ',', '.'); ?> <?php echo $fatura['para_birimi_sembol'] ?? '₺'; ?>
+                                            </td>
+                                        </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
@@ -193,10 +201,10 @@ if (!isset($_SESSION['company_id'])) {
                             <a href="musteri_ekle.php" class="btn btn-outline-success d-flex align-items-center">
                                 <i class="bi bi-person-plus me-2"></i> Yeni Müşteri
                             </a>
-                            <?php if ($_SESSION['user']['admin']): ?>
-                            <a href="admin.php" class="btn btn-outline-dark d-flex align-items-center">
-                                <i class="bi bi-gear me-2"></i> Ayarlar
-                            </a>
+                            <?php if ($_SESSION['user']['rol'] == 'admin'): ?>
+                                <a href="admin.php" class="btn btn-outline-dark d-flex align-items-center">
+                                    <i class="bi bi-gear me-2"></i> Ayarlar
+                                </a>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -237,8 +245,8 @@ if (!isset($_SESSION['company_id'])) {
             </div>
         </div>
     </div>
-    <?php
+<?php
 }
 
 require_once 'templates/footer.php';
-?> 
+?>
