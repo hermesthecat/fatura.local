@@ -8,6 +8,18 @@ require_once 'includes/db.php';
 require_once 'includes/functions.php';
 require_once 'vendor/autoload.php';
 
+// Oturum kontrolü
+if (!isset($_SESSION['user'])) {
+    header('Location: login.php');
+    exit;
+}
+
+if (!isset($_SESSION['company_id'])) {
+    hata("Lütfen önce bir şirket seçin!");
+    header('Location: index.php');
+    exit;
+}
+
 // Fatura ID kontrolü
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     hata("Geçersiz fatura ID!");
@@ -18,12 +30,13 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $fatura_id = $_GET['id'];
 $db = Database::getInstance();
 
-// Fatura ve müşteri bilgilerini al
-$sql = "SELECT i.*, c.* 
+// Fatura, müşteri ve para birimi bilgilerini al
+$sql = "SELECT i.*, c.*, cur.sembol as para_birimi_sembol, cur.kod as para_birimi_kod
         FROM invoices i 
         LEFT JOIN customers c ON i.customer_id = c.id 
-        WHERE i.id = :id";
-$fatura = $db->query($sql, [':id' => $fatura_id])->fetch();
+        LEFT JOIN currencies cur ON cur.id = i.currency_id
+        WHERE i.id = :id AND i.company_id = :company_id";
+$fatura = $db->query($sql, [':id' => $fatura_id, ':company_id' => $_SESSION['company_id']])->fetch();
 
 if (!$fatura) {
     hata("Fatura bulunamadı!");
@@ -35,8 +48,24 @@ if (!$fatura) {
 $sql = "SELECT * FROM invoice_items WHERE invoice_id = :invoice_id ORDER BY id";
 $kalemler = $db->query($sql, [':invoice_id' => $fatura_id])->fetchAll();
 
+if (!$kalemler) {
+    hata("Fatura kalemleri bulunamadı!");
+    header("Location: fatura_listele.php");
+    exit;
+}
+
 // Şirket bilgilerini al
-$sirket = $db->query("SELECT * FROM company_settings WHERE id = 1")->fetch();
+$sql = "SELECT * FROM companies WHERE id = :company_id";
+$sirket = $db->query($sql, [':company_id' => $_SESSION['company_id']])->fetch();
+
+if (!$sirket) {
+    hata("Şirket bilgileri bulunamadı!");
+    header("Location: fatura_listele.php");
+    exit;
+}
+
+// Tüm çıktıyı temizle
+ob_clean();
 
 // PDF oluştur
 class MYPDF extends TCPDF {
@@ -169,17 +198,17 @@ for($i = 0; $i < $bos_satir; $i++) {
 // Toplamlar
 $pdf->Ln(5);
 $pdf->SetFont('dejavusans', 'B', 9);
-$pdf->Cell(135, 6, 'YAZI İLE: ' . sayiyiYaziyaCevir($fatura['genel_toplam']) . ' TL', 0, 0, 'L');
+$pdf->Cell(135, 6, 'YAZI İLE: ' . sayiyiYaziyaCevir($fatura['genel_toplam']) . ' ' . $fatura['para_birimi_kod'], 0, 0, 'L');
 $pdf->Cell(30, 6, 'ARA TOPLAM:', 0, 0, 'R');
-$pdf->Cell(25, 6, formatPara($fatura['toplam_tutar']), 1, 1, 'R');
+$pdf->Cell(25, 6, formatPara($fatura['toplam_tutar']) . ' ' . $fatura['para_birimi_sembol'], 1, 1, 'R');
 
 $pdf->Cell(135, 6, '', 0, 0, 'L');
 $pdf->Cell(30, 6, 'KDV TOPLAM:', 0, 0, 'R');
-$pdf->Cell(25, 6, formatPara($fatura['kdv_tutari']), 1, 1, 'R');
+$pdf->Cell(25, 6, formatPara($fatura['kdv_tutari']) . ' ' . $fatura['para_birimi_sembol'], 1, 1, 'R');
 
 $pdf->Cell(135, 6, '', 0, 0, 'L');
 $pdf->Cell(30, 6, 'GENEL TOPLAM:', 0, 0, 'R');
-$pdf->Cell(25, 6, formatPara($fatura['genel_toplam']), 1, 1, 'R');
+$pdf->Cell(25, 6, formatPara($fatura['genel_toplam']) . ' ' . $fatura['para_birimi_sembol'], 1, 1, 'R');
 
 // Açıklama ve Notlar
 if ($fatura['aciklama']) {
