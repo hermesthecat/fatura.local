@@ -1,6 +1,3 @@
-.clinerules-architect
-.clinerules-ask
-.clinerules-code
 .roomodes
 memory-bank/
 projectBrief.md
@@ -12,3 +9,6 @@ vendor/
 .env.production
 code2prompt.bat
 output.txt
+.clinerules-*
+.cursorrules
+.clinerules
