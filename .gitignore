@@ -10,3 +10,5 @@ vendor/
 .env.local
 .env.development
 .env.production
+code2prompt.bat
+output.txt
